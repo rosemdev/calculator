@@ -1,24 +1,28 @@
-<template>
+n<template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <p>rosem</p>
+    <calculator/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Calculator from "./components/Calculator";
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Calculator,
   }
 }
 </script>
-
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@100;300;400&display=swap');
+  @import "styles/button_reset.css";
+</style>
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Work Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
