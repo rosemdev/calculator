@@ -1,38 +1,38 @@
 <template>
     <div class="calculator">
         <div class="result-screen">
-            <span class="result-line expression">2 + 2</span>
-            <span class="result-line result">4</span>
+            <span class="result-line expression">{{expression}}</span>
+            <span class="result-line result">{{result}}</span>
         </div>
-        <div class="keyboard-container">
+        <div class="keyboard-container" v-on:click="identifyClickedKey($event)">
             <div>
                 <button class="btn clear">C</button>
                 <button class="btn erase">Erase</button>
-                <button class="btn operation division">/</button>
+                <button class="btn operation division" data-operation="division">/</button>
             </div>
             <div>
                 <button class="btn number" data-num="1">1</button>
                 <button class="btn number" data-num="2">2</button>
                 <button class="btn number" data-num="3">3</button>
-                <button class="btn operation multiply">*</button>
+                <button class="btn operation multiply" data-operation="multiply">*</button>
             </div>
             <div>
                 <button class="btn number" data-num="4">4</button>
                 <button class="btn number" data-num="5">5</button>
                 <button class="btn number" data-num="6">6</button>
-                <button class="btn operation subtraction">-</button>
+                <button class="btn operation subtraction" data-operation="minus">-</button>
             </div>
             <div>
                 <button class="btn number" data-num="7">7</button>
                 <button class="btn number" data-num="8">8</button>
                 <button class="btn number" data-num="9">9</button>
-                <button class="btn operation plus">+</button>
+                <button class="btn operation plus" data-operation="plus">+</button>
             </div>
             <div>
                 <button class="btn number" data-num="0">0</button>
-                <button class="btn number" data-num="0">00</button>
+                <button class="btn number" data-num="00">00</button>
                 <button class="btn dot">.</button>
-                <button class="btn operation equals">=</button>
+                <button class="btn operation equals" data-equals="equals">=</button>
             </div>
         </div>
     </div>
@@ -44,10 +44,94 @@
         props: {},
 
         data() {
-            return {}
+            return {
+                expression: '0',
+                currentInput: '',
+                expressionTree: {
+                    leftOperand: '',
+                    operation: '',
+                    rightOperand: '',
+
+                },
+
+                result: '',
+            }
         },
 
-        methods: {},
+        methods: {
+            identifyClickedKey: function (event) {
+
+                let clickedEl = event.target;
+
+                if (this.result) {
+                    this.clearAll();
+                }
+
+
+                if (clickedEl.hasAttribute("data-num")) {
+                    this.expressionTree.operation.length === 0 ?
+                        this.expressionTree.leftOperand += clickedEl.getAttribute("data-num")
+                        : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
+                    
+                } else if (clickedEl.hasAttribute("data-operation")) {
+                   this.expressionTree.operation = clickedEl.getAttribute("data-operation");
+
+                } else if (clickedEl.hasAttribute("data-equals")) {
+
+                    this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
+                }
+
+                else if (clickedEl.classList.contains("erase")) {
+                    console.log(clickedEl);
+                    this.erase();
+
+                    return ;
+                }
+
+                else if (clickedEl.classList.contains("clear")) {
+
+                    this.clearAll();
+                    return;
+                }
+
+
+                this.expression = this.expressionTree.leftOperand + this.expressionTree.operation + this.expressionTree.rightOperand;
+
+
+            },
+
+            performOperation(leftOperand, operation, rightOperand) {
+                leftOperand = parseFloat(leftOperand);
+                rightOperand = parseFloat(rightOperand);
+
+                switch (operation) {
+                    case "plus":
+                        this.result = leftOperand + rightOperand;
+                        break;
+
+                    case "minus":
+                        this.result = leftOperand - rightOperand;
+                        break;
+
+                    case "multiply":
+                        this.result = leftOperand * rightOperand;
+                        break;
+
+                    case "division":
+                        this.result = leftOperand / rightOperand;
+                        break;
+                }
+            },
+
+            clearAll() {
+                this.expressionTree.leftOperand = this.expressionTree.rightOperand = this.expressionTree.operation = '';
+                this.result ='';
+            },
+
+            erase() {
+                this.expression = this.expression.slice(0, -1);
+            }
+        },
     }
 </script>
 <style scoped lang="less">
@@ -76,6 +160,10 @@
         }
 
         .result-screen {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            flex-direction: column;
             background-color: white;
             height: 112px;
             padding: 5px;
