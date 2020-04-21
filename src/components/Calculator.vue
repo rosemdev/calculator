@@ -45,8 +45,6 @@
 
         data() {
             return {
-                expression: '0',
-                currentInput: '',
                 expressionTree: {
                     leftOperand: '',
                     operation: '',
@@ -55,6 +53,12 @@
                 },
 
                 result: '',
+            }
+        },
+
+        computed: {
+            expression() {
+                return this.expressionTree.leftOperand + this.expressionTree.operation + this.expressionTree.rightOperand;
             }
         },
 
@@ -72,32 +76,21 @@
                     this.expressionTree.operation.length === 0 ?
                         this.expressionTree.leftOperand += clickedEl.getAttribute("data-num")
                         : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
-                    
+
                 } else if (clickedEl.hasAttribute("data-operation")) {
-                   this.expressionTree.operation = clickedEl.getAttribute("data-operation");
+                    this.expressionTree.operation = clickedEl.getAttribute("data-operation");
 
                 } else if (clickedEl.hasAttribute("data-equals")) {
 
                     this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
-                }
-
-                else if (clickedEl.classList.contains("erase")) {
+                } else if (clickedEl.classList.contains("erase")) {
                     console.log(clickedEl);
                     this.erase();
-
-                    return ;
-                }
-
-                else if (clickedEl.classList.contains("clear")) {
-
+                    return;
+                } else if (clickedEl.classList.contains("clear")) {
                     this.clearAll();
                     return;
                 }
-
-
-                this.expression = this.expressionTree.leftOperand + this.expressionTree.operation + this.expressionTree.rightOperand;
-
-
             },
 
             performOperation(leftOperand, operation, rightOperand) {
@@ -125,11 +118,22 @@
 
             clearAll() {
                 this.expressionTree.leftOperand = this.expressionTree.rightOperand = this.expressionTree.operation = '';
-                this.result ='';
+                this.result = '';
             },
 
             erase() {
                 this.expression = this.expression.slice(0, -1);
+
+                if (this.expressionTree.rightOperand) {
+                    this.expressionTree.rightOperand = this.expressionTree.rightOperand.slice(0, -1);
+
+                } else if (this.expressionTree.operation) {
+                    this.expressionTree.operation = '';
+
+                } else {
+                    this.expressionTree.leftOperand = this.expressionTree.leftOperand.slice(0, -1);
+                }
+
             }
         },
     }
