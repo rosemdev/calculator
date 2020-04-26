@@ -96,6 +96,13 @@
                         : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
 
                 } else if (clickedEl.hasAttribute("data-operation")) {
+                    const operation = clickedEl.getAttribute("data-operation");
+
+                    //!this.expressionTree.leftOperand - empty
+                    if (!this.expressionTree.leftOperand && (operation !== '+' && operation !== '-')) {
+                        return;
+                    }
+
                     if (this.expressionTree.rightOperand) {
                         this.expressionTree = {
                             leftOperand: this.expressionTree,
@@ -105,7 +112,7 @@
                         };
                     }
 
-                    this.expressionTree.operation = clickedEl.getAttribute("data-operation");
+                    this.expressionTree.operation = operation;
 
                 } else if (clickedEl.classList.contains("dot")) {
                     if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
@@ -136,17 +143,16 @@
             },
 
             performOperation(leftOperand, operation, rightOperand) {
-                if(typeof leftOperand === 'object') {
+                if (typeof leftOperand === 'object') {
                     leftOperand = this.performOperation(leftOperand.leftOperand, leftOperand.operation, leftOperand.rightOperand);
                 }
 
-                if(typeof rightOperand === 'object') {
+                if (typeof rightOperand === 'object') {
                     rightOperand = this.performOperation(rightOperand.leftOperand, rightOperand.operation, rightOperand.rightOperand);
                 }
 
-                leftOperand = parseFloat(leftOperand);
-
-                rightOperand ? rightOperand = parseFloat(rightOperand) : rightOperand = 0;
+                leftOperand = leftOperand ? parseFloat(leftOperand) : 0;
+                rightOperand = rightOperand ? parseFloat(rightOperand) : 0;
 
                 switch (operation) {
                     case "+":
