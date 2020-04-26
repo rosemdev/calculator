@@ -58,11 +58,30 @@
 
         computed: {
             expression() {
-                return this.expressionTree.leftOperand + this.expressionTree.operation + this.expressionTree.rightOperand;
+                return this.printSingleExpression(this.expressionTree);
             }
         },
 
         methods: {
+            printSingleExpression(expression) {
+                let expressionString = '';
+
+                if (typeof expression.leftOperand === 'object') {
+                    expressionString += this.printSingleExpression(expression.leftOperand);
+                } else {
+                    expressionString += expression.leftOperand;
+                }
+
+                expressionString += expression.operation;
+
+                if (typeof expression.rightOperand === 'object') {
+                    expressionString += this.printSingleExpression(expression.rightOperand);
+                } else {
+                    expressionString += expression.rightOperand;
+                }
+
+                return `(${expressionString})`;
+            },
             identifyClickedKey: function (event) {
 
                 let clickedEl = event.target;
@@ -77,6 +96,15 @@
                         : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
 
                 } else if (clickedEl.hasAttribute("data-operation")) {
+                    if (this.expressionTree.rightOperand) {
+                        this.expressionTree = {
+                            leftOperand: this.expressionTree,
+                            operation: '',
+                            rightOperand: '',
+
+                        };
+                    }
+
                     this.expressionTree.operation = clickedEl.getAttribute("data-operation");
 
                 } else if (clickedEl.classList.contains("dot")) {
@@ -97,7 +125,7 @@
 
                 } else if (clickedEl.hasAttribute("data-equals")) {
 
-                    this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
+                    this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
                 } else if (clickedEl.classList.contains("erase")) {
                     this.erase();
                     return;
@@ -108,25 +136,30 @@
             },
 
             performOperation(leftOperand, operation, rightOperand) {
+                if(typeof leftOperand === 'object') {
+                    leftOperand = this.performOperation(leftOperand.leftOperand, leftOperand.operation, leftOperand.rightOperand);
+                }
+
+                if(typeof rightOperand === 'object') {
+                    rightOperand = this.performOperation(rightOperand.leftOperand, rightOperand.operation, rightOperand.rightOperand);
+                }
+
                 leftOperand = parseFloat(leftOperand);
-                rightOperand = parseFloat(rightOperand);
+
+                rightOperand ? rightOperand = parseFloat(rightOperand) : rightOperand = 0;
 
                 switch (operation) {
                     case "+":
-                        this.result = +(leftOperand + rightOperand).toFixed(10);
-                        break;
+                        return Number((leftOperand + rightOperand).toFixed(10));
 
                     case "-":
-                        this.result = +(leftOperand - rightOperand).toFixed(10);
-                        break;
+                        return Number((leftOperand - rightOperand).toFixed(10));
 
                     case "*":
-                        this.result = +(leftOperand * rightOperand).toFixed(10);
-                        break;
+                        return Number((leftOperand * rightOperand).toFixed(10));
 
                     case "/":
-                        this.result = +(leftOperand / rightOperand).toFixed(10);
-                        break;
+                        return Number((leftOperand / rightOperand).toFixed(10));
                 }
             },
 
