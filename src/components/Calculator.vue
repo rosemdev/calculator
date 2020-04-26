@@ -8,25 +8,25 @@
             <div>
                 <button class="btn clear">C</button>
                 <button class="btn erase">Erase</button>
-                <button class="btn operation division" data-operation="division">/</button>
+                <button class="btn operation division" data-operation="/">/</button>
             </div>
             <div>
                 <button class="btn number" data-num="1">1</button>
                 <button class="btn number" data-num="2">2</button>
                 <button class="btn number" data-num="3">3</button>
-                <button class="btn operation multiply" data-operation="multiply">*</button>
+                <button class="btn operation multiply" data-operation="*">*</button>
             </div>
             <div>
                 <button class="btn number" data-num="4">4</button>
                 <button class="btn number" data-num="5">5</button>
                 <button class="btn number" data-num="6">6</button>
-                <button class="btn operation subtraction" data-operation="minus">-</button>
+                <button class="btn operation subtraction" data-operation="-">-</button>
             </div>
             <div>
                 <button class="btn number" data-num="7">7</button>
                 <button class="btn number" data-num="8">8</button>
                 <button class="btn number" data-num="9">9</button>
-                <button class="btn operation plus" data-operation="plus">+</button>
+                <button class="btn operation plus" data-operation="+">+</button>
             </div>
             <div>
                 <button class="btn number" data-num="0">0</button>
@@ -71,7 +71,6 @@
                     this.clearAll();
                 }
 
-
                 if (clickedEl.hasAttribute("data-num")) {
                     this.expressionTree.operation.length === 0 ?
                         this.expressionTree.leftOperand += clickedEl.getAttribute("data-num")
@@ -81,9 +80,18 @@
                     this.expressionTree.operation = clickedEl.getAttribute("data-operation");
 
                 } else if (clickedEl.classList.contains("dot")) {
-                    if(this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
+                    if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
+                        if (this.expressionTree.leftOperand.includes('.')) {
+                            return;
+                        }
+
                         this.expressionTree.leftOperand = this.expressionTree.leftOperand + '.';
+
                     } else if (this.expressionTree.rightOperand.length >= 0) {
+                        if (this.expressionTree.rightOperand.includes('.')) {
+                            return;
+                        }
+
                         this.expressionTree.rightOperand = this.expressionTree.rightOperand + '.';
                     }
 
@@ -104,19 +112,19 @@
                 rightOperand = parseFloat(rightOperand);
 
                 switch (operation) {
-                    case "plus":
+                    case "+":
                         this.result = +(leftOperand + rightOperand).toFixed(10);
                         break;
 
-                    case "minus":
+                    case "-":
                         this.result = +(leftOperand - rightOperand).toFixed(10);
                         break;
 
-                    case "multiply":
+                    case "*":
                         this.result = +(leftOperand * rightOperand).toFixed(10);
                         break;
 
-                    case "division":
+                    case "/":
                         this.result = +(leftOperand / rightOperand).toFixed(10);
                         break;
                 }
