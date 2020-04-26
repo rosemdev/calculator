@@ -80,11 +80,17 @@
                 } else if (clickedEl.hasAttribute("data-operation")) {
                     this.expressionTree.operation = clickedEl.getAttribute("data-operation");
 
+                } else if (clickedEl.classList.contains("dot")) {
+                    if(this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
+                        this.expressionTree.leftOperand = this.expressionTree.leftOperand + '.';
+                    } else if (this.expressionTree.rightOperand.length >= 0) {
+                        this.expressionTree.rightOperand = this.expressionTree.rightOperand + '.';
+                    }
+
                 } else if (clickedEl.hasAttribute("data-equals")) {
 
                     this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
                 } else if (clickedEl.classList.contains("erase")) {
-                    console.log(clickedEl);
                     this.erase();
                     return;
                 } else if (clickedEl.classList.contains("clear")) {
@@ -99,19 +105,19 @@
 
                 switch (operation) {
                     case "plus":
-                        this.result = leftOperand + rightOperand;
+                        this.result = +(leftOperand + rightOperand).toFixed(10);
                         break;
 
                     case "minus":
-                        this.result = leftOperand - rightOperand;
+                        this.result = +(leftOperand - rightOperand).toFixed(10);
                         break;
 
                     case "multiply":
-                        this.result = leftOperand * rightOperand;
+                        this.result = +(leftOperand * rightOperand).toFixed(10);
                         break;
 
                     case "division":
-                        this.result = leftOperand / rightOperand;
+                        this.result = +(leftOperand / rightOperand).toFixed(10);
                         break;
                 }
             },
@@ -122,7 +128,6 @@
             },
 
             erase() {
-                this.expression = this.expression.slice(0, -1);
 
                 if (this.expressionTree.rightOperand) {
                     this.expressionTree.rightOperand = this.expressionTree.rightOperand.slice(0, -1);
@@ -134,6 +139,7 @@
                     this.expressionTree.leftOperand = this.expressionTree.leftOperand.slice(0, -1);
                 }
 
+                this.expression ? this.expression.slice(0, -1) : this.expression;
             }
         },
     }
