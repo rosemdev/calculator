@@ -107,7 +107,7 @@
                     const operation = clickedEl.getAttribute("data-operation");
 
                     //!this.expressionTree.leftOperand - empty
-                    if (!this.expressionTree.leftOperand && (operation !== '+' && operation !== '-')) {
+                    if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && (operation !== '+' && operation !== '-')) {
                         return;
                     }
 
