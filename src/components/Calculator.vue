@@ -81,7 +81,7 @@
                     expressionString += expression.rightOperand;
                 }
 
-                return `(${expressionString})`;
+                return (expressionString.length === 0 ? '' : `(${expressionString})`);
             },
             identifyClickedKey: function (event) {
 
@@ -212,29 +212,16 @@
                     if (typeof expression.rightOperand === 'object') {
                         this.erase(expression.rightOperand);
 
-                        if(!expression.rightOperand.rightOperand && !expression.rightOperand.operation) {
-                            expression.rightOperand =''
-                        }
-
                     } else {
                         expression.rightOperand = expression.rightOperand.slice(0, -1);
                     }
 
                 } else if (expression.operation) {
                     expression.operation = '';
-                    expression = {
-                        leftOperand: expression.leftOperand,
-                        operation: '',
-                        rightOperand: ''
-                    }
 
                 } else {
                     if (typeof expression.leftOperand === 'object') {
                         this.erase(expression.leftOperand);
-
-                        if(!expression.leftOperand.leftOperand && !expression.rightOperand.operation) {
-                            expression.leftOperand =''
-                        }
 
                     } else {
                         expression.leftOperand = expression.leftOperand.slice(0, -1);
@@ -242,8 +229,19 @@
                 }
 
                 if(typeof expression.leftOperand === 'object' && !expression.operation) {
-                    console.log(5);
                     this.expressionTree = expression.leftOperand;
+                }
+                
+                console.log(!expression.rightOperand.operation);
+
+                if(typeof expression.rightOperand === 'object' && !expression.rightOperand.operation) {
+                    console.log(3);
+                    this.expressionTree  = {
+                        leftOperand: expression.leftOperand,
+                        operation: expression.operation,
+                        rightOperand: expression.rightOperand.leftOperand
+                    }
+
                 }
             }
         },
