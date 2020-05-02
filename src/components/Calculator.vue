@@ -103,10 +103,6 @@
                         }
                     }
 
-                    // this.expressionTree.operation.length === 0 ?
-                    //     this.expressionTree.leftOperand += clickedEl.getAttribute("data-num")
-                    //     : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
-
                 } else if (clickedEl.hasAttribute("data-operation")) {
                     const operation = clickedEl.getAttribute("data-operation");
 
@@ -118,8 +114,12 @@
 
                     if (this.expressionTree.rightOperand) {
 
+                        if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
+                            return;
+                        }
+
                         if (operation === '*' || operation === '/') {
-                            console.log(3);
+
                             this.expressionTree = {
                                 leftOperand: this.expressionTree.leftOperand,
                                 operation: this.expressionTree.operation,
