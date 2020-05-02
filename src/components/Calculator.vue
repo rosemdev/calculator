@@ -111,7 +111,6 @@
                         return;
                     }
 
-
                     if (this.expressionTree.rightOperand) {
 
                         if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
@@ -168,11 +167,10 @@
 
                     this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
                 } else if (clickedEl.classList.contains("erase")) {
-                    this.erase();
-                    return;
+                    this.erase(this.expressionTree);
+
                 } else if (clickedEl.classList.contains("clear")) {
                     this.clearAll();
-                    return;
                 }
             },
 
@@ -208,19 +206,45 @@
                 this.result = '';
             },
 
-            erase() {
+            erase(expression) {
 
-                if (this.expressionTree.rightOperand) {
-                    this.expressionTree.rightOperand = this.expressionTree.rightOperand.slice(0, -1);
+                if (expression.rightOperand) {
+                    if (typeof expression.rightOperand === 'object') {
+                        this.erase(expression.rightOperand);
 
-                } else if (this.expressionTree.operation) {
-                    this.expressionTree.operation = '';
+                        if(!expression.rightOperand.rightOperand && !expression.rightOperand.operation) {
+                            expression.rightOperand =''
+                        }
+
+                    } else {
+                        expression.rightOperand = expression.rightOperand.slice(0, -1);
+                    }
+
+                } else if (expression.operation) {
+                    expression.operation = '';
+                    expression = {
+                        leftOperand: expression.leftOperand,
+                        operation: '',
+                        rightOperand: ''
+                    }
 
                 } else {
-                    this.expressionTree.leftOperand = this.expressionTree.leftOperand.slice(0, -1);
+                    if (typeof expression.leftOperand === 'object') {
+                        this.erase(expression.leftOperand);
+
+                        if(!expression.leftOperand.leftOperand && !expression.rightOperand.operation) {
+                            expression.leftOperand =''
+                        }
+
+                    } else {
+                        expression.leftOperand = expression.leftOperand.slice(0, -1);
+                    }
                 }
 
-                this.expression ? this.expression.slice(0, -1) : this.expression;
+                if(typeof expression.leftOperand === 'object' && !expression.operation) {
+                    console.log(5);
+                    this.expressionTree = expression.leftOperand;
+                }
             }
         },
     }
