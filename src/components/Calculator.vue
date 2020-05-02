@@ -72,6 +72,7 @@
                     expressionString += expression.leftOperand;
                 }
 
+
                 expressionString += expression.operation;
 
                 if (typeof expression.rightOperand === 'object') {
@@ -91,9 +92,20 @@
                 }
 
                 if (clickedEl.hasAttribute("data-num")) {
-                    this.expressionTree.operation.length === 0 ?
-                        this.expressionTree.leftOperand += clickedEl.getAttribute("data-num")
-                        : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
+
+                    if (this.expressionTree.operation.length === 0) {
+                        this.expressionTree.leftOperand += clickedEl.getAttribute("data-num");
+                    } else {
+                        if (typeof this.expressionTree.rightOperand !== 'object') {
+                            this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
+                        } else {
+                            this.expressionTree.rightOperand.rightOperand += clickedEl.getAttribute("data-num");
+                        }
+                    }
+
+                    // this.expressionTree.operation.length === 0 ?
+                    //     this.expressionTree.leftOperand += clickedEl.getAttribute("data-num")
+                    //     : this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
 
                 } else if (clickedEl.hasAttribute("data-operation")) {
                     const operation = clickedEl.getAttribute("data-operation");
@@ -103,16 +115,38 @@
                         return;
                     }
 
+
                     if (this.expressionTree.rightOperand) {
-                        this.expressionTree = {
-                            leftOperand: this.expressionTree,
-                            operation: '',
-                            rightOperand: '',
 
-                        };
+                        if (operation === '*' || operation === '/') {
+                            console.log(3);
+                            this.expressionTree = {
+                                leftOperand: this.expressionTree.leftOperand,
+                                operation: this.expressionTree.operation,
+                                rightOperand: {
+                                    leftOperand: this.expressionTree.rightOperand,
+                                    operation: operation,
+                                    rightOperand: ''
+                                },
+
+                            };
+
+                        } else {
+                            this.expressionTree = {
+                                leftOperand: {
+                                    leftOperand: this.expressionTree.leftOperand,
+                                    operation: this.expressionTree.operation,
+                                    rightOperand: this.expressionTree.rightOperand,
+                                },
+                                operation: operation,
+                                rightOperand: ''
+
+                            };
+                        }
+
+                    } else {
+                        this.expressionTree.operation = operation;
                     }
-
-                    this.expressionTree.operation = operation;
 
                 } else if (clickedEl.classList.contains("dot")) {
                     if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
