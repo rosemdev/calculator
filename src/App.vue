@@ -1,7 +1,7 @@
 n<template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <p>@rosem</p>
+    <p class="github-link"><a href="https://github.com/rosemdev/calculator" target="_blank">@rosem</a></p>
     <calculator/>
   </div>
 </template>
@@ -34,4 +34,9 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+
+  .github-link a {
+    color: white;
+    text-decoration: none;
+  }
 </style>

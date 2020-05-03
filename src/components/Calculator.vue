@@ -2,25 +2,26 @@
     <div class="calculator">
         <div class="result-screen">
             <span class="result-line expression">{{expression}}</span>
+            <span class="result-line before-result" v-if="(!expressionTree.leftOperand && !expressionTree.operation)">enter expression</span>
             <span class="result-line result">{{result}}</span>
         </div>
-        <div class="keyboard-container" v-on:click="identifyClickedKey($event)">
+        <div class="keyboard-container" ref="calculator" v-on:click="identifyClickedKey" v-on:keyup="identifyClickedKey">
             <div>
                 <button class="btn clear">C</button>
-                <button class="btn erase">Erase</button>
-                <button class="btn operation division" data-operation="/">/</button>
+                <button class="btn erase">&#x2B05;</button>
+                <button class="btn operation division" data-operation="÷">÷</button>
             </div>
             <div>
                 <button class="btn number" data-num="1">1</button>
                 <button class="btn number" data-num="2">2</button>
                 <button class="btn number" data-num="3">3</button>
-                <button class="btn operation multiply" data-operation="*">*</button>
+                <button class="btn operation multiply" data-operation="×">×</button>
             </div>
             <div>
                 <button class="btn number" data-num="4">4</button>
                 <button class="btn number" data-num="5">5</button>
                 <button class="btn number" data-num="6">6</button>
-                <button class="btn operation subtraction" data-operation="-">-</button>
+                <button class="btn operation subtraction" data-operation="−">−</button>
             </div>
             <div>
                 <button class="btn number" data-num="7">7</button>
@@ -97,6 +98,8 @@
                     };
 
                     this.result = '';
+                } else if (this.result) {
+                    this.clearAll()
                 }
 
                 if (clickedEl.hasAttribute("data-num")) {
@@ -115,7 +118,7 @@
                     const operation = clickedEl.getAttribute("data-operation");
 
                     //!this.expressionTree.leftOperand - empty
-                    if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && (operation !== '+' && operation !== '-')) {
+                    if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && (operation !== '+' && operation !== '−')) {
                         return;
                     }
 
@@ -125,7 +128,7 @@
                             return;
                         }
 
-                        if (operation === '*' || operation === '/') {
+                        if (operation === '×' || operation === '÷') {
 
                             this.expressionTree = {
                                 leftOperand: this.expressionTree.leftOperand,
@@ -199,13 +202,13 @@
                     case "+":
                         return Number((leftOperand + rightOperand).toFixed(10));
 
-                    case "-":
+                    case "−":
                         return Number((leftOperand - rightOperand).toFixed(10));
 
-                    case "*":
+                    case "×":
                         return Number((leftOperand * rightOperand).toFixed(10));
 
-                    case "/":
+                    case "÷":
                         return Number((leftOperand / rightOperand).toFixed(10));
                 }
             },
@@ -283,11 +286,9 @@
             align-items: flex-end;
             justify-content: center;
             flex-direction: column;
-            background-color: white;
             height: 112px;
             padding: 5px;
             margin: 10px 10px 0;
-            color: #e42690;
 
             .result-line {
                 text-align: right;
@@ -297,11 +298,18 @@
 
             .expression {
                 font-size: 27px;
-                color: #3d464f;
+                /*color: #3d464f;*/
+                color: white;
+            }
+
+            .before-result {
+                font-size: 23px;
+                color: #65656591;
             }
 
             .result {
                 font-size: 36px;
+                color: #e42690;
             }
         }
 
