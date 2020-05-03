@@ -76,19 +76,27 @@
                 expressionString += expression.operation;
 
                 if (typeof expression.rightOperand === 'object') {
-                    expressionString += this.printSingleExpression(expression.rightOperand);
+                    expressionString += `(${this.printSingleExpression(expression.rightOperand)})`;
                 } else {
                     expressionString += expression.rightOperand;
                 }
 
-                return (expressionString.length === 0 ? '' : `(${expressionString})`);
+                return expressionString;
             },
+
             identifyClickedKey: function (event) {
 
                 let clickedEl = event.target;
 
-                if (this.result) {
-                    this.clearAll();
+                if (this.result && clickedEl.hasAttribute("data-operation")) {
+                    this.expressionTree = {
+                        leftOperand: this.result,
+                        operation: '',
+                        rightOperand: ''
+
+                    };
+
+                    this.result = '';
                 }
 
                 if (clickedEl.hasAttribute("data-num")) {
@@ -166,6 +174,7 @@
                 } else if (clickedEl.hasAttribute("data-equals")) {
 
                     this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
+
                 } else if (clickedEl.classList.contains("erase")) {
                     this.erase(this.expressionTree);
 
@@ -228,15 +237,12 @@
                     }
                 }
 
-                if(typeof expression.leftOperand === 'object' && !expression.operation) {
+                if (typeof expression.leftOperand === 'object' && !expression.operation) {
                     this.expressionTree = expression.leftOperand;
                 }
-                
-                console.log(!expression.rightOperand.operation);
 
-                if(typeof expression.rightOperand === 'object' && !expression.rightOperand.operation) {
-                    console.log(3);
-                    this.expressionTree  = {
+                if (typeof expression.rightOperand === 'object' && !expression.rightOperand.operation) {
+                    this.expressionTree = {
                         leftOperand: expression.leftOperand,
                         operation: expression.operation,
                         rightOperand: expression.rightOperand.leftOperand
@@ -280,7 +286,7 @@
             background-color: white;
             height: 112px;
             padding: 5px;
-            margin: 0 10px;
+            margin: 10px 10px 0;
             color: #e42690;
 
             .result-line {
@@ -301,7 +307,7 @@
 
         .keyboard-container {
             color: white;
-            margin-top: -2px;
+            margin: -2px 0 8px;
 
             .clear {
                 background-color: #e42690;
