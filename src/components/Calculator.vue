@@ -5,7 +5,7 @@
             <span class="result-line before-result" v-if="(!expressionTree.leftOperand && !expressionTree.operation)">enter expression</span>
             <span class="result-line result">{{result}}</span>
         </div>
-        <div class="keyboard-container" ref="calculator" v-on:click="identifyClickedKey" v-on:keyup="identifyClickedKey">
+        <div class="keyboard-container" v-on:click="onClick">
             <div>
                 <button class="btn clear">C</button>
                 <button class="btn erase">&#x2B05;</button>
@@ -46,6 +46,11 @@
 
         data() {
             return {
+                userInput: {
+                    type: '',
+                    value: ''
+                },
+
                 expressionTree: {
                     leftOperand: '',
                     operation: '',
@@ -63,7 +68,106 @@
             }
         },
 
+        mounted() {
+            window.addEventListener('keyup', this.onKeyUp)
+        },
+
+        destroyed() {
+            window.removeEventListener('keyup', this.onKeyUp)
+        },
+
         methods: {
+
+            onClick(event) {
+
+                let clickedEl = event.target;
+
+                if (clickedEl.hasAttribute("data-num")) {
+                    this.userInput.type = 'number';
+                    this.userInput.value = clickedEl.getAttribute("data-num");
+
+                } else if (clickedEl.hasAttribute("data-operation")) {
+                    this.userInput.type = 'operation';
+                    this.userInput.value = clickedEl.getAttribute("data-operation");
+
+                } else if (clickedEl.classList.contains("dot")) {
+                    this.userInput.type = 'dot';
+                    this.userInput.value = '.';
+
+                } else if (clickedEl.hasAttribute("data-equals")) {
+                    this.userInput.type = 'equals';
+                    this.userInput.value = '';
+
+                } else if (clickedEl.classList.contains("erase")) {
+                    this.userInput.type = 'erase';
+                    this.userInput.value = '';
+
+                } else if (clickedEl.classList.contains("clear")) {
+                    this.userInput.type = 'clear';
+                    this.userInput.value = '';
+
+                }
+
+                console.log(this.userInput.type);
+                console.log(this.userInput.value);
+
+                this.createExpressionTree();
+
+            },
+
+            onKeyUp(event) {
+
+                let clickedElCode = event.key;
+
+                if (clickedElCode >= 0 && clickedElCode <= 9) {
+                    this.userInput.type = 'number';
+                    this.userInput.value = clickedElCode;
+
+                } else if (clickedElCode === '*' || clickedElCode === '/' || clickedElCode === '+' || clickedElCode === '-') {
+                    this.userInput.type = 'operation';
+
+                    // eslint-disable-next-line
+                    // debugger;
+
+                    switch(clickedElCode) {
+                        case '*':
+                            this.userInput.value = '×';
+                            break;
+
+                        case '/':
+                            this.userInput.value = '÷';
+                            break;
+
+                        case '+':
+                            this.userInput.value = '+';
+                            break;
+                        case '-':
+                            this.userInput.value = '−';
+                            break;
+                    }
+
+                } else if (clickedElCode === '.') {
+                    this.userInput.type = 'dot';
+                    this.userInput.value = '.';
+
+                } else if (clickedElCode === '=' || clickedElCode === 'Enter') {
+                    this.userInput.type = 'equals';
+                    this.userInput.value = '=';
+
+                } else if (clickedElCode === 'Backspace') {
+                    this.userInput.type = 'erase';
+                    this.userInput.value = '';
+
+                } else if (clickedElCode === 'Delete') {
+                    this.userInput.type = 'clear';
+                    this.userInput.value = '';
+                }
+
+                console.log(clickedElCode);
+                this.createExpressionTree();
+
+            },
+
             printSingleExpression(expression) {
                 let expressionString = '';
 
@@ -85,11 +189,9 @@
                 return expressionString;
             },
 
-            identifyClickedKey: function (event) {
+            createExpressionTree: function () {
 
-                let clickedEl = event.target;
-
-                if (this.result && clickedEl.hasAttribute("data-operation")) {
+                if (this.result && this.userInput.type === 'operation') {
                     this.expressionTree = {
                         leftOperand: this.result,
                         operation: '',
@@ -98,91 +200,106 @@
                     };
 
                     this.result = '';
+
                 } else if (this.result) {
                     this.clearAll()
                 }
 
-                if (clickedEl.hasAttribute("data-num")) {
-
-                    if (this.expressionTree.operation.length === 0) {
-                        this.expressionTree.leftOperand += clickedEl.getAttribute("data-num");
-                    } else {
-                        if (typeof this.expressionTree.rightOperand !== 'object') {
-                            this.expressionTree.rightOperand += clickedEl.getAttribute("data-num");
+                switch (this.userInput.type) {
+                    case 'number': {
+                        if (this.expressionTree.operation.length === 0) {
+                            this.expressionTree.leftOperand += this.userInput.value;
                         } else {
-                            this.expressionTree.rightOperand.rightOperand += clickedEl.getAttribute("data-num");
+                            if (typeof this.expressionTree.rightOperand !== 'object') {
+                                this.expressionTree.rightOperand += this.userInput.value;
+                            } else {
+                                this.expressionTree.rightOperand.rightOperand += this.userInput.value;
+                            }
                         }
+
+                        break;
                     }
 
-                } else if (clickedEl.hasAttribute("data-operation")) {
-                    const operation = clickedEl.getAttribute("data-operation");
+                    case 'operation': {
+                        const operation = this.userInput.value;
 
-                    //!this.expressionTree.leftOperand - empty
-                    if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && (operation !== '+' && operation !== '−')) {
-                        return;
-                    }
-
-                    if (this.expressionTree.rightOperand) {
-
-                        if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
+                        //!this.expressionTree.leftOperand - empty
+                        if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && (operation !== '+' && operation !== '−')) {
                             return;
                         }
 
-                        if (operation === '×' || operation === '÷') {
+                        if (this.expressionTree.rightOperand) {
 
-                            this.expressionTree = {
-                                leftOperand: this.expressionTree.leftOperand,
-                                operation: this.expressionTree.operation,
-                                rightOperand: {
-                                    leftOperand: this.expressionTree.rightOperand,
-                                    operation: operation,
-                                    rightOperand: ''
-                                },
+                            if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
+                                return;
+                            }
 
-                            };
+                            if (operation === '×' || operation === '÷') {
 
-                        } else {
-                            this.expressionTree = {
-                                leftOperand: {
+                                this.expressionTree = {
                                     leftOperand: this.expressionTree.leftOperand,
                                     operation: this.expressionTree.operation,
-                                    rightOperand: this.expressionTree.rightOperand,
-                                },
-                                operation: operation,
-                                rightOperand: ''
+                                    rightOperand: {
+                                        leftOperand: this.expressionTree.rightOperand,
+                                        operation: operation,
+                                        rightOperand: ''
+                                    },
 
-                            };
+                                };
+
+                            } else {
+                                this.expressionTree = {
+                                    leftOperand: {
+                                        leftOperand: this.expressionTree.leftOperand,
+                                        operation: this.expressionTree.operation,
+                                        rightOperand: this.expressionTree.rightOperand,
+                                    },
+                                    operation: operation,
+                                    rightOperand: ''
+
+                                };
+                            }
+
+                        } else {
+                            this.expressionTree.operation = operation;
                         }
-
-                    } else {
-                        this.expressionTree.operation = operation;
+                        break;
                     }
 
-                } else if (clickedEl.classList.contains("dot")) {
-                    if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
-                        if (this.expressionTree.leftOperand.includes('.')) {
-                            return;
+                    case 'dot': {
+                        if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
+                            if (this.expressionTree.leftOperand.includes('.')) {
+                                return;
+                            }
+
+                            this.expressionTree.leftOperand = this.expressionTree.leftOperand + '.';
+
+                        } else if (this.expressionTree.rightOperand.length >= 0) {
+                            if (this.expressionTree.rightOperand.includes('.')) {
+                                return;
+                            }
+
+                            this.expressionTree.rightOperand = this.expressionTree.rightOperand + '.';
                         }
 
-                        this.expressionTree.leftOperand = this.expressionTree.leftOperand + '.';
-
-                    } else if (this.expressionTree.rightOperand.length >= 0) {
-                        if (this.expressionTree.rightOperand.includes('.')) {
-                            return;
-                        }
-
-                        this.expressionTree.rightOperand = this.expressionTree.rightOperand + '.';
+                        break;
                     }
 
-                } else if (clickedEl.hasAttribute("data-equals")) {
+                    case 'equals': {
+                        this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
+                        break;
+                    }
 
-                    this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
+                    case 'erase': {
+                        this.erase(this.expressionTree);
+                        break;
+                    }
 
-                } else if (clickedEl.classList.contains("erase")) {
-                    this.erase(this.expressionTree);
+                    case 'clear': {
+                        this.clearAll();
+                        break;
+                    }
 
-                } else if (clickedEl.classList.contains("clear")) {
-                    this.clearAll();
                 }
             },
 
@@ -298,12 +415,11 @@
 
             .expression {
                 font-size: 27px;
-                /*color: #3d464f;*/
                 color: white;
             }
 
             .before-result {
-                font-size: 23px;
+                font-size: 27px;
                 color: #65656591;
             }
 
