@@ -5,41 +5,42 @@
             <span class="result-line before-result" v-if="(!expressionTree.leftOperand && !expressionTree.operation)">enter expression</span>
             <span class="result-line result">{{result}}</span>
         </div>
-        <div class="keyboard-container" v-on:click="onClick">
+        <div class="keyboard-container" ref="keyboard" v-on:click="onClick">
             <div>
-                <button class="btn clear">C</button>
-                <button class="btn erase">&#x2B05;</button>
-                <button class="btn operation division" data-operation="÷">÷</button>
+                <button type="button" class="btn clear">C</button>
+                <button type="button" class="btn erase">&#x2B05;</button>
+                <button type="button" class="btn operation division" data-operation="÷">÷</button>
             </div>
             <div>
-                <button class="btn number" data-num="1">1</button>
-                <button class="btn number" data-num="2">2</button>
-                <button class="btn number" data-num="3">3</button>
-                <button class="btn operation multiply" data-operation="×">×</button>
+                <button type="button" class="btn number" data-number="1">1</button>
+                <button type="button" class="btn number" data-number="2">2</button>
+                <button type="button" class="btn number" data-number="3">3</button>
+                <button type="button" class="btn operation multiply" data-operation="×">×</button>
             </div>
             <div>
-                <button class="btn number" data-num="4">4</button>
-                <button class="btn number" data-num="5">5</button>
-                <button class="btn number" data-num="6">6</button>
-                <button class="btn operation subtraction" data-operation="−">−</button>
+                <button type="button" class="btn number" data-number="4">4</button>
+                <button type="button" class="btn number" data-number="5">5</button>
+                <button type="button" class="btn number" data-number="6">6</button>
+                <button type="button" class="btn operation subtraction" data-operation="−">−</button>
             </div>
             <div>
-                <button class="btn number" data-num="7">7</button>
-                <button class="btn number" data-num="8">8</button>
-                <button class="btn number" data-num="9">9</button>
-                <button class="btn operation plus" data-operation="+">+</button>
+                <button type="button" class="btn number" data-number="7">7</button>
+                <button type="button" class="btn number" data-number="8">8</button>
+                <button type="button" class="btn number" data-number="9">9</button>
+                <button type="button" class="btn operation plus" data-operation="+">+</button>
             </div>
             <div>
-                <button class="btn number" data-num="0">0</button>
-                <button class="btn number" data-num="00">00</button>
-                <button class="btn dot">.</button>
-                <button class="btn operation equals" data-equals="equals">=</button>
+                <button type="button" class="btn number" data-number="0">0</button>
+                <button type="button" class="btn number" data-number="00">00</button>
+                <button type="button" class="btn dot">.</button>
+                <button type="button" class="btn equal">=</button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+
     export default {
         name: 'calculator',
         props: {},
@@ -58,6 +59,16 @@
 
                 },
 
+                keyboard: {
+                    number: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    operation: ['+', '-', '/', '*'],
+                    equal: ['=', 'Enter'],
+                    dot: '.',
+                    clear: 'Delete',
+                    erase: 'Backspace',
+
+                },
+
                 result: '',
             }
         },
@@ -69,7 +80,12 @@
         },
 
         mounted() {
-            window.addEventListener('keyup', this.onKeyUp)
+            // DOM not updated yet
+            this.$nextTick(() => {
+                // DOM updated
+                this.$refs.keyboard.focus();
+                window.addEventListener('keyup', this.onKeyUp)
+            });
         },
 
         destroyed() {
@@ -77,59 +93,109 @@
         },
 
         methods: {
+            isKeyNumber(key) {
+                return this.keyboard.number.includes(Number(key));
+            },
+
+            isKeyOperation(key) {
+                return this.keyboard.operation.includes(key);
+            },
+
+            isKeyDot(key) {
+                return this.keyboard.dot === key;
+            },
+
+            isKeyErase(key) {
+                return this.keyboard.erase === key;
+            },
+
+            isKeyClear(key) {
+                return this.keyboard.clear === key;
+            },
+
+            isKeyEqual(key) {
+                return this.keyboard.equal.includes(key);
+            },
+
+            isControlKey(key) {
+                return this.isKeyNumber(key) || this.isKeyOperation(key) || this.isKeyDot(key) ||
+                    this.isKeyErase(key) || this.isKeyClear(key) || this.isKeyEqual(key);
+            },
 
             onClick(event) {
 
                 let clickedEl = event.target;
 
-                if (clickedEl.hasAttribute("data-num")) {
-                    this.userInput.type = 'number';
-                    this.userInput.value = clickedEl.getAttribute("data-num");
+                for (let key in this.keyboard) {
+                    if (clickedEl.classList.contains(key)) {
+                        this.userInput.type = key;
+                        this.userInput.value = clickedEl.dataset[key];
 
-                } else if (clickedEl.hasAttribute("data-operation")) {
-                    this.userInput.type = 'operation';
-                    this.userInput.value = clickedEl.getAttribute("data-operation");
-
-                } else if (clickedEl.classList.contains("dot")) {
-                    this.userInput.type = 'dot';
-                    this.userInput.value = '.';
-
-                } else if (clickedEl.hasAttribute("data-equals")) {
-                    this.userInput.type = 'equals';
-                    this.userInput.value = '';
-
-                } else if (clickedEl.classList.contains("erase")) {
-                    this.userInput.type = 'erase';
-                    this.userInput.value = '';
-
-                } else if (clickedEl.classList.contains("clear")) {
-                    this.userInput.type = 'clear';
-                    this.userInput.value = '';
-
+                        break;
+                    }
                 }
+
+                // if (clickedEl.hasAttribute("data-number")) {
+                //     this.userInput.type = 'number';
+                //     this.userInput.value = clickedEl.getAttribute("data-number");
+                //
+                // } else if (clickedEl.hasAttribute("data-operation")) {
+                //     this.userInput.type = 'operation';
+                //     this.userInput.value = clickedEl.getAttribute("data-operation");
+                //
+                // } else if (clickedEl.classList.contains("dot")) {
+                //     this.userInput.type = 'dot';
+                //     this.userInput.value = '';
+                //
+                // } else if (clickedEl.hasAttribute("data-equal")) {
+                //     this.userInput.type = 'equal';
+                //     this.userInput.value = '';
+                //
+                // } else if (clickedEl.classList.contains("erase")) {
+                //     this.userInput.type = 'erase';
+                //     this.userInput.value = '';
+                //
+                // } else if (clickedEl.classList.contains("clear")) {
+                //     this.userInput.type = 'clear';
+                //     this.userInput.value = '';
+                //
+                // }
+
+                console.log(document.activeElement);
 
                 console.log(this.userInput.type);
                 console.log(this.userInput.value);
+                // console.log(event);
 
                 this.createExpressionTree();
 
             },
 
             onKeyUp(event) {
-
                 let clickedElCode = event.key;
+                //eslint-disable-next-line
+                // debugger;
 
-                if (clickedElCode >= 0 && clickedElCode <= 9) {
+                // Treat Enter as a click only when a control button is in focus.
+                // Because a browser triggers 2 events in such case - click and keyup.
+                if (this.$refs.keyboard.contains(event.target) && clickedElCode === 'Enter') {
+                    return;
+                }
+
+
+                if (clickedElCode !== 'Enter' && this.isControlKey(clickedElCode)) {
+                    let focusedEl = document.activeElement;
+                    focusedEl.blur();
+                }
+
+                if (this.isKeyNumber(clickedElCode)) {
                     this.userInput.type = 'number';
                     this.userInput.value = clickedElCode;
 
-                } else if (clickedElCode === '*' || clickedElCode === '/' || clickedElCode === '+' || clickedElCode === '-') {
+                } else if (this.isKeyOperation(clickedElCode)) {
                     this.userInput.type = 'operation';
 
-                    // eslint-disable-next-line
-                    // debugger;
-
-                    switch(clickedElCode) {
+                    switch (clickedElCode) {
                         case '*':
                             this.userInput.value = '×';
                             break;
@@ -146,21 +212,30 @@
                             break;
                     }
 
-                } else if (clickedElCode === '.') {
+                } else if (this.isKeyDot(clickedElCode)) {
                     this.userInput.type = 'dot';
                     this.userInput.value = '.';
 
-                } else if (clickedElCode === '=' || clickedElCode === 'Enter') {
-                    this.userInput.type = 'equals';
-                    this.userInput.value = '=';
+                } else if (this.isKeyEqual(clickedElCode)) {
+                    this.userInput.type = 'equal';
+                    this.userInput.value = '';
 
-                } else if (clickedElCode === 'Backspace') {
+
+                } else if (this.isKeyErase(clickedElCode)) {
                     this.userInput.type = 'erase';
                     this.userInput.value = '';
 
-                } else if (clickedElCode === 'Delete') {
+                } else if (this.isKeyClear(clickedElCode)) {
                     this.userInput.type = 'clear';
                     this.userInput.value = '';
+
+                } else {
+                    this.userInput.type = 'not-calculator';
+                    this.userInput.value = '';
+                }
+
+                if (this.userInput.type === 'not-calculator') {
+                    return;
                 }
 
                 console.log(clickedElCode);
@@ -191,6 +266,7 @@
 
             createExpressionTree: function () {
 
+
                 if (this.result && this.userInput.type === 'operation') {
                     this.expressionTree = {
                         leftOperand: this.result,
@@ -201,8 +277,8 @@
 
                     this.result = '';
 
-                } else if (this.result) {
-                    this.clearAll()
+                } else if (this.result && this.userInput.type === 'number') {
+                    this.clearAll();
                 }
 
                 switch (this.userInput.type) {
@@ -285,8 +361,9 @@
                         break;
                     }
 
-                    case 'equals': {
-                        this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation, this.expressionTree.rightOperand);
+                    case 'equal': {
+                        this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation,
+                            this.expressionTree.rightOperand);
                         break;
                     }
 
@@ -336,6 +413,10 @@
             },
 
             erase(expression) {
+
+                if (this.result) {
+                    this.clearAll();
+                }
 
                 if (expression.rightOperand) {
                     if (typeof expression.rightOperand === 'object') {
@@ -406,6 +487,7 @@
             height: 112px;
             padding: 5px;
             margin: 10px 10px 0;
+            overflow-wrap: anywhere;
 
             .result-line {
                 text-align: right;
@@ -438,7 +520,7 @@
                 width: 152px;
             }
 
-            .equals {
+            .equal {
                 background-color: #1d6cbd;
             }
         }
