@@ -6,6 +6,12 @@
             <span class="result-line result">{{result}}</span>
         </div>
         <div class="keyboard-container" ref="keyboard" v-on:click="onClick">
+            <div v-bind:class="['additional-operations', {'extended': isExtended}]">
+                <button type="button" class="btn operation" data-operation="power">x<sup class="sup">y</sup></button>
+                <button type="button" class="btn operation" data-operation="square-root">&radic;x</button>
+                <button type="button" class="btn operation" data-operation="power2">x<sup class="sup">2</sup></button>
+                <button type="button" class="btn operation" data-operation="percent">%</button>
+            </div>
             <div>
                 <button type="button" class="btn clear">C</button>
                 <button type="button" class="btn erase">&#x2B05;</button>
@@ -30,8 +36,10 @@
                 <button type="button" class="btn operation plus" data-operation="+">+</button>
             </div>
             <div>
+                <button type="button" v-bind:class="[isExtended ? 'extended' : 'not-extended', 'btn']"
+                        v-on:click="isExtended=!isExtended">
+                </button>
                 <button type="button" class="btn number" data-number="0">0</button>
-                <button type="button" class="btn number" data-number="00">00</button>
                 <button type="button" class="btn dot">.</button>
                 <button type="button" class="btn equal">=</button>
             </div>
@@ -60,7 +68,7 @@
                 },
 
                 keyboard: {
-                    number: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    number: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     operation: ['+', '-', '/', '*'],
                     equal: ['=', 'Enter'],
                     dot: '.',
@@ -70,6 +78,7 @@
                 },
 
                 result: '',
+                isExtended: false
             }
         },
 
@@ -134,38 +143,6 @@
                         break;
                     }
                 }
-
-                // if (clickedEl.hasAttribute("data-number")) {
-                //     this.userInput.type = 'number';
-                //     this.userInput.value = clickedEl.getAttribute("data-number");
-                //
-                // } else if (clickedEl.hasAttribute("data-operation")) {
-                //     this.userInput.type = 'operation';
-                //     this.userInput.value = clickedEl.getAttribute("data-operation");
-                //
-                // } else if (clickedEl.classList.contains("dot")) {
-                //     this.userInput.type = 'dot';
-                //     this.userInput.value = '';
-                //
-                // } else if (clickedEl.hasAttribute("data-equal")) {
-                //     this.userInput.type = 'equal';
-                //     this.userInput.value = '';
-                //
-                // } else if (clickedEl.classList.contains("erase")) {
-                //     this.userInput.type = 'erase';
-                //     this.userInput.value = '';
-                //
-                // } else if (clickedEl.classList.contains("clear")) {
-                //     this.userInput.type = 'clear';
-                //     this.userInput.value = '';
-                //
-                // }
-
-                console.log(document.activeElement);
-
-                console.log(this.userInput.type);
-                console.log(this.userInput.value);
-                // console.log(event);
 
                 this.createExpressionTree();
 
@@ -238,7 +215,6 @@
                     return;
                 }
 
-                console.log(clickedElCode);
                 this.createExpressionTree();
 
             },
@@ -277,7 +253,7 @@
 
                     this.result = '';
 
-                } else if (this.result && this.userInput.type === 'number') {
+                } else if (this.result && (this.userInput.type === 'number' || this.userInput.type === 'dot')) {
                     this.clearAll();
                 }
 
@@ -458,7 +434,7 @@
 
     .calculator {
         max-width: 100%;
-        width: 330px;
+        width: 320px;
         margin: 25px auto;
         background-color: #37404af7;
         padding: 15px;
@@ -477,7 +453,9 @@
             &:hover {
                 background-color: #1c6cbd5e;
             }
+
         }
+
 
         .result-screen {
             display: flex;
@@ -513,7 +491,34 @@
 
         .keyboard-container {
             color: white;
-            margin: -2px 0 8px;
+            margin: 0 0 8px;
+
+            .additional-operations {
+                opacity: 0;
+                height: 0;
+                pointer-events: none;
+                transition: height 0.3s, opacity 0.1ms;
+            }
+
+            .additional-operations.extended {
+                opacity: 1;
+                height: 54px;
+                pointer-events: auto;
+
+                .btn {
+                    height: 50px;
+                    background-color: #6969694f;
+
+                    &:hover {
+                        background-color: #1c6cbd5e;
+                    }
+                }
+
+                .sup {
+                    font-size: 9px;
+                }
+
+            }
 
             .clear {
                 background-color: #e42690;
@@ -523,6 +528,19 @@
             .equal {
                 background-color: #1d6cbd;
             }
+
+            .btn.extended {
+                &:after {
+                    content: '⬋';
+                }
+            }
+
+            .btn.not-extended {
+                &:after {
+                    content: '⬈';
+                }
+            }
+
         }
     }
 
