@@ -8,32 +8,33 @@
         <div class="keyboard-container" ref="keyboard" v-on:click="onClick">
             <div v-bind:class="['additional-operations', {'extended': isExtended}]">
                 <button type="button" class="btn operation" data-operation="power">x<sup class="sup">y</sup></button>
-                <button type="button" class="btn operation" data-operation="square-root">&radic;x</button>
-                <button type="button" class="btn operation" data-operation="power2">x<sup class="sup">2</sup></button>
+                <button type="button" class="btn operation" data-operation="squareRoot">√x</button>
+                <button type="button" class="btn operation" data-operation="toThe2Power">x<sup class="sup">2</sup>
+                </button>
                 <button type="button" class="btn operation" data-operation="percent">%</button>
             </div>
             <div>
                 <button type="button" class="btn clear">C</button>
-                <button type="button" class="btn erase">&#x2B05;</button>
-                <button type="button" class="btn operation division" data-operation="÷">÷</button>
+                <button type="button" class="btn erase">⬅</button>
+                <button type="button" class="btn operation" data-operation="division">÷</button>
             </div>
             <div>
                 <button type="button" class="btn number" data-number="1">1</button>
                 <button type="button" class="btn number" data-number="2">2</button>
                 <button type="button" class="btn number" data-number="3">3</button>
-                <button type="button" class="btn operation multiply" data-operation="×">×</button>
+                <button type="button" class="btn operation" data-operation="multiply">×</button>
             </div>
             <div>
                 <button type="button" class="btn number" data-number="4">4</button>
                 <button type="button" class="btn number" data-number="5">5</button>
                 <button type="button" class="btn number" data-number="6">6</button>
-                <button type="button" class="btn operation subtraction" data-operation="−">−</button>
+                <button type="button" class="btn operation" data-operation="subtraction">−</button>
             </div>
             <div>
                 <button type="button" class="btn number" data-number="7">7</button>
                 <button type="button" class="btn number" data-number="8">8</button>
                 <button type="button" class="btn number" data-number="9">9</button>
-                <button type="button" class="btn operation plus" data-operation="+">+</button>
+                <button type="button" class="btn operation" data-operation="plus">+</button>
             </div>
             <div>
                 <button type="button" v-bind:class="[isExtended ? 'extended' : 'not-extended', 'btn']"
@@ -67,18 +68,86 @@
 
                 },
 
+                // keyboard: {
+                //     number: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                //     operation: ['+', '-', '/', '*'],
+                //     oneOperandOperations: ['√', '%'],
+                //     equal: ['=', 'Enter'],
+                //     dot: '.',
+                //     clear: 'Delete',
+                //     erase: 'Backspace',
+                //
+                // },
+
                 keyboard: {
                     number: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                    operation: ['+', '-', '/', '*'],
                     equal: ['=', 'Enter'],
                     dot: '.',
                     clear: 'Delete',
                     erase: 'Backspace',
+                    operation: {
+                        subtraction: {
+                            name: 'subtraction',
+                            isTwoOperands: true,
+                            isFirstPriority: false,
+                            symbol: '−',
+                            keyboardKey: '-'
+                        },
+                        plus: {
+                            name: 'plus',
+                            isTwoOperands: true,
+                            isFirstPriority: false,
+                            symbol: '+',
+                            keyboardKey: '+'
+                        },
+                        multiply: {
+                            name: 'multiply',
+                            isTwoOperands: true,
+                            isFirstPriority: true,
+                            symbol: '×',
+                            keyboardKey: '*'
+                        },
+                        division: {
+                            name: 'division',
+                            isTwoOperands: true,
+                            isFirstPriority: true,
+                            symbol: '÷',
+                            keyboardKey: '/'
+                        },
+                        power: {
+                            name: 'power',
+                            isTwoOperands: true,
+                            isFirstPriority: true,
+                            symbol: '^',
+                            keyboardKey: 'Shift ^'
+                        },
 
+                        toThe2Power: {
+                            name: 'toThe2Power',
+                            isTwoOperands: true,
+                            isFirstPriority: true,
+                            symbol: '^',
+                            keyboardKey: 'Shift ^'
+                        },
+                        percent: {
+                            name: 'percent',
+                            isTwoOperands: true,
+                            isFirstPriority: true,
+                            symbol: '%',
+                            keyboardKey: 'Shift %'
+                        },
+                        squareRoot: {
+                            name: 'squareRoot',
+                            isTwoOperands: false,
+                            isFirstPriority: true,
+                            symbol: '√',
+                            keyboardKey: ''
+                        },
+                    },
                 },
 
                 result: '',
-                isExtended: false
+                isExtended: true
             }
         },
 
@@ -107,7 +176,15 @@
             },
 
             isKeyOperation(key) {
-                return this.keyboard.operation.includes(key);
+
+                for (let operation in this.keyboard.operation) {
+                    console.log(this.keyboard.operation[operation].keyboardKey);
+                    if (key === this.keyboard.operation[operation].keyboardKey) {
+                        break
+                    }
+
+                }
+                return true;
             },
 
             isKeyDot(key) {
@@ -134,15 +211,55 @@
             onClick(event) {
 
                 let clickedEl = event.target;
+                let operationName = clickedEl.dataset.operation;
 
                 for (let key in this.keyboard) {
+                    console.log(key);
                     if (clickedEl.classList.contains(key)) {
                         this.userInput.type = key;
-                        this.userInput.value = clickedEl.dataset[key];
+
+                        if (this.userInput.type === 'operation') {
+                            this.userInput.value = this.keyboard.operation[operationName];
+
+                        } else {
+                            this.userInput.value = clickedEl.dataset[key];
+
+                        }
 
                         break;
                     }
                 }
+
+                // if (clickedEl.classList.contains('number')) {
+                //     this.userInput.type = 'number';
+                //     this.userInput.value = clickedEl.dataset.number;
+                //
+                // } else if (clickedEl.classList.contains('operation')) {
+                //
+                //     // operation name which comes from html
+                //     let operationName = clickedEl.dataset.operation;
+                //
+                //     this.userInput.type = 'operation';
+                //     this.userInput.value = this.keyboard.operation[operationName];
+                //     console.log(this.userInput.value);
+                //
+                // } else if (clickedEl.classList.contains("dot")) {
+                //     this.userInput.type = 'dot';
+                //     this.userInput.value = '.';
+                //
+                // } else if (clickedEl.classList.contains('equal')) {
+                //     this.userInput.type = 'equal';
+                //     this.userInput.value = '';
+                //
+                // } else if (clickedEl.classList.contains("erase")) {
+                //     this.userInput.type = 'erase';
+                //     this.userInput.value = '';
+                // } else if (clickedEl.classList.contains("clear")) {
+                //     this.userInput.type = 'clear';
+                //     this.userInput.value = '';
+                // }
+
+                console.log(this.userInput.value);
 
                 this.createExpressionTree();
 
@@ -171,23 +288,24 @@
 
                 } else if (this.isKeyOperation(clickedElCode)) {
                     this.userInput.type = 'operation';
+                    this.userInput.value = this.keyboard.operation.division;
 
-                    switch (clickedElCode) {
-                        case '*':
-                            this.userInput.value = '×';
-                            break;
-
-                        case '/':
-                            this.userInput.value = '÷';
-                            break;
-
-                        case '+':
-                            this.userInput.value = '+';
-                            break;
-                        case '-':
-                            this.userInput.value = '−';
-                            break;
-                    }
+                    // switch (clickedElCode) {
+                    //     case '*':
+                    //         this.userInput.value = '×';
+                    //         break;
+                    //
+                    //     case '/':
+                    //         this.userInput.value = '÷';
+                    //         break;
+                    //
+                    //     case '+':
+                    //         this.userInput.value = '+';
+                    //         break;
+                    //     case '-':
+                    //         this.userInput.value = '−';
+                    //         break;
+                    // }
 
                 } else if (this.isKeyDot(clickedElCode)) {
                     this.userInput.type = 'dot';
@@ -228,8 +346,10 @@
                     expressionString += expression.leftOperand;
                 }
 
+                if (expression.operation.symbol) {
+                    expressionString += expression.operation.symbol;
+                }
 
-                expressionString += expression.operation;
 
                 if (typeof expression.rightOperand === 'object') {
                     expressionString += `(${this.printSingleExpression(expression.rightOperand)})`;
@@ -276,7 +396,12 @@
                         const operation = this.userInput.value;
 
                         //!this.expressionTree.leftOperand - empty
-                        if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && (operation !== '+' && operation !== '−')) {
+                        //this code lets the user to input only + - √ operations before numbers
+                        if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand &&
+                            (operation.name !== 'plus' &&
+                                operation.name !== 'subtraction' &&
+                                operation.name !== 'squareRoot')) {
+                            console.log(operation.name);
                             return;
                         }
 
@@ -286,7 +411,8 @@
                                 return;
                             }
 
-                            if (operation === '×' || operation === '÷') {
+                            console.log(operation.isFirstPriority);
+                            if (operation.isFirstPriority) {
 
                                 this.expressionTree = {
                                     leftOperand: this.expressionTree.leftOperand,
@@ -315,6 +441,11 @@
                         } else {
                             this.expressionTree.operation = operation;
                         }
+
+                        // if (operation.name === 'toThe2Power') {
+                        //     this.expressionTree.rightOperand = 2;
+                        // }
+
                         break;
                     }
 
@@ -338,8 +469,7 @@
                     }
 
                     case 'equal': {
-                        this.result = this.performOperation(this.expressionTree.leftOperand, this.expressionTree.operation,
-                            this.expressionTree.rightOperand);
+                        this.result = this.performOperation(this.expressionTree);
                         break;
                     }
 
@@ -356,30 +486,46 @@
                 }
             },
 
-            performOperation(leftOperand, operation, rightOperand) {
+            performOperation(dataObject) {
+                console.log(dataObject);
+
+                let leftOperand = dataObject.leftOperand;
+                let rightOperand = dataObject.rightOperand;
+                const operationName = dataObject.operation.name;
+
                 if (typeof leftOperand === 'object') {
-                    leftOperand = this.performOperation(leftOperand.leftOperand, leftOperand.operation, leftOperand.rightOperand);
+                    leftOperand = this.performOperation(leftOperand);
                 }
 
                 if (typeof rightOperand === 'object') {
-                    rightOperand = this.performOperation(rightOperand.leftOperand, rightOperand.operation, rightOperand.rightOperand);
+                    rightOperand = this.performOperation(rightOperand);
                 }
+
 
                 leftOperand = leftOperand ? parseFloat(leftOperand) : 0;
                 rightOperand = rightOperand ? parseFloat(rightOperand) : 0;
 
-                switch (operation) {
-                    case "+":
+                switch (operationName) {
+                    case "plus":
                         return Number((leftOperand + rightOperand).toFixed(10));
 
-                    case "−":
+                    case "subtraction":
                         return Number((leftOperand - rightOperand).toFixed(10));
 
-                    case "×":
+                    case "multiply":
                         return Number((leftOperand * rightOperand).toFixed(10));
 
-                    case "÷":
+                    case "division":
                         return Number((leftOperand / rightOperand).toFixed(10));
+
+                    case "squareRoot":
+                        return Number((Math.sqrt(rightOperand)).toFixed(10));
+
+                    case "power":
+                        return Number((leftOperand ** rightOperand).toFixed(10));
+
+                    case "toThe2Power":
+                        return Number((leftOperand ** 2).toFixed(10));
                 }
             },
 
