@@ -175,16 +175,15 @@
                 return this.keyboard.number.includes(Number(key));
             },
 
-            isKeyOperation(key) {
+            isOperationKey(key) {
 
-                for (let operation in this.keyboard.operation) {
-                    console.log(this.keyboard.operation[operation].keyboardKey);
-                    if (key === this.keyboard.operation[operation].keyboardKey) {
-                        break
+                let operations = this.keyboard.operation;
+
+                for (let operation in operations) {
+                    if(key === operations[operation].keyboardKey) {
+                        return operation;
                     }
-
                 }
-                return true;
             },
 
             isKeyDot(key) {
@@ -204,7 +203,7 @@
             },
 
             isControlKey(key) {
-                return this.isKeyNumber(key) || this.isKeyOperation(key) || this.isKeyDot(key) ||
+                return this.isKeyNumber(key) || this.isOperationKey(key) || this.isKeyDot(key) ||
                     this.isKeyErase(key) || this.isKeyClear(key) || this.isKeyEqual(key);
             },
 
@@ -214,52 +213,21 @@
                 let operationName = clickedEl.dataset.operation;
 
                 for (let key in this.keyboard) {
-                    console.log(key);
                     if (clickedEl.classList.contains(key)) {
                         this.userInput.type = key;
 
                         if (this.userInput.type === 'operation') {
                             this.userInput.value = this.keyboard.operation[operationName];
+                            break;
 
                         } else {
                             this.userInput.value = clickedEl.dataset[key];
-
+                            break;
                         }
 
-                        break;
+
                     }
                 }
-
-                // if (clickedEl.classList.contains('number')) {
-                //     this.userInput.type = 'number';
-                //     this.userInput.value = clickedEl.dataset.number;
-                //
-                // } else if (clickedEl.classList.contains('operation')) {
-                //
-                //     // operation name which comes from html
-                //     let operationName = clickedEl.dataset.operation;
-                //
-                //     this.userInput.type = 'operation';
-                //     this.userInput.value = this.keyboard.operation[operationName];
-                //     console.log(this.userInput.value);
-                //
-                // } else if (clickedEl.classList.contains("dot")) {
-                //     this.userInput.type = 'dot';
-                //     this.userInput.value = '.';
-                //
-                // } else if (clickedEl.classList.contains('equal')) {
-                //     this.userInput.type = 'equal';
-                //     this.userInput.value = '';
-                //
-                // } else if (clickedEl.classList.contains("erase")) {
-                //     this.userInput.type = 'erase';
-                //     this.userInput.value = '';
-                // } else if (clickedEl.classList.contains("clear")) {
-                //     this.userInput.type = 'clear';
-                //     this.userInput.value = '';
-                // }
-
-                console.log(this.userInput.value);
 
                 this.createExpressionTree();
 
@@ -286,26 +254,13 @@
                     this.userInput.type = 'number';
                     this.userInput.value = clickedElCode;
 
-                } else if (this.isKeyOperation(clickedElCode)) {
-                    this.userInput.type = 'operation';
-                    this.userInput.value = this.keyboard.operation.division;
+                } else if (this.isOperationKey(clickedElCode)) {
 
-                    // switch (clickedElCode) {
-                    //     case '*':
-                    //         this.userInput.value = '×';
-                    //         break;
-                    //
-                    //     case '/':
-                    //         this.userInput.value = '÷';
-                    //         break;
-                    //
-                    //     case '+':
-                    //         this.userInput.value = '+';
-                    //         break;
-                    //     case '-':
-                    //         this.userInput.value = '−';
-                    //         break;
-                    // }
+                    let operationName = this.isOperationKey(clickedElCode);
+                    console.log(operationName);
+                    this.userInput.type = 'operation';
+                    this.userInput.value = this.keyboard.operation[operationName];
+
 
                 } else if (this.isKeyDot(clickedElCode)) {
                     this.userInput.type = 'dot';
@@ -401,7 +356,6 @@
                             (operation.name !== 'plus' &&
                                 operation.name !== 'subtraction' &&
                                 operation.name !== 'squareRoot')) {
-                            console.log(operation.name);
                             return;
                         }
 
@@ -411,7 +365,7 @@
                                 return;
                             }
 
-                            console.log(operation.isFirstPriority);
+                            console.log(operation.isTwoOperands);
                             if (operation.isFirstPriority) {
 
                                 this.expressionTree = {
