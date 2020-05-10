@@ -124,7 +124,7 @@
 
                         toThe2Power: {
                             name: 'toThe2Power',
-                            isTwoOperands: true,
+                            isTwoOperands: false,
                             isFirstPriority: true,
                             symbol: '^',
                             keyboardKey: 'Shift ^'
@@ -180,7 +180,7 @@
                 let operations = this.keyboard.operation;
 
                 for (let operation in operations) {
-                    if(key === operations[operation].keyboardKey) {
+                    if (key === operations[operation].keyboardKey) {
                         return operation;
                     }
                 }
@@ -297,6 +297,7 @@
 
                 if (typeof expression.leftOperand === 'object') {
                     expressionString += this.printSingleExpression(expression.leftOperand);
+
                 } else {
                     expressionString += expression.leftOperand;
                 }
@@ -308,6 +309,7 @@
 
                 if (typeof expression.rightOperand === 'object') {
                     expressionString += `(${this.printSingleExpression(expression.rightOperand)})`;
+
                 } else {
                     expressionString += expression.rightOperand;
                 }
@@ -359,13 +361,13 @@
                             return;
                         }
 
+
                         if (this.expressionTree.rightOperand) {
 
                             if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
                                 return;
                             }
 
-                            console.log(operation.isTwoOperands);
                             if (operation.isFirstPriority) {
 
                                 this.expressionTree = {
@@ -392,13 +394,21 @@
                                 };
                             }
 
+                        } else if (this.expressionTree.leftOperand && !operation.isTwoOperands) {
+                            this.expressionTree = {
+                                leftOperand: this.expressionTree.leftOperand,
+                                operation: this.expressionTree.operation,
+                                rightOperand: {
+                                    leftOperand: this.expressionTree.rightOperand,
+                                    operation: operation,
+                                    rightOperand: ''
+                                },
+
+                            };
+
                         } else {
                             this.expressionTree.operation = operation;
                         }
-
-                        // if (operation.name === 'toThe2Power') {
-                        //     this.expressionTree.rightOperand = 2;
-                        // }
 
                         break;
                     }
