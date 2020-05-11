@@ -114,6 +114,7 @@
                         toThe2Power: {
                             name: 'toThe2Power',
                             isTwoOperands: true,
+                            constantOperand: '2',
                             isFirstPriority: true,
                             symbol: '^',
                             keyboardKey: 'Shift ^'
@@ -121,6 +122,8 @@
                         percent: {
                             name: 'percent',
                             isTwoOperands: true,
+                            // constantOperand: '0.01',
+                            isApplicableForNumber: true,
                             isFirstPriority: true,
                             symbol: '%',
                             keyboardKey: 'Shift %'
@@ -224,8 +227,6 @@
 
             onKeyUp(event) {
                 let clickedElCode = event.key;
-                //eslint-disable-next-line
-                // debugger;
 
                 // Treat Enter as a click only when a control button is in focus.
                 // Because a browser triggers 2 events in such case - click and keyup.
@@ -340,6 +341,9 @@
 
                     case 'operation': {
                         const operation = this.userInput.value;
+                        
+                        console.log(operation.symbol);
+
 
                         //this code lets the user to input only + - √ operations before in the beginning of expression
                         if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand &&
@@ -350,25 +354,29 @@
                         }
 
                         //this code doesn't let user to input number then oneOperand operations without simple operation between
-                        if (this.expressionTree.leftOperand && !this.expressionTree.operation && !operation.isTwoOperands) {
+                        //except % (ex 2√4)
+                        if (this.expressionTree.leftOperand && !this.expressionTree.operation &&
+                            !operation.isTwoOperands && operation.name !== 'percent') {
                             return;
                         }
 
                         if (this.expressionTree.rightOperand) {
+                            //eslint-disable-next-line
+                            // debugger;
 
-                            if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
-                                return;
-                            }
+                            // if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
+                            //     return;
+                            // }
 
                             if (operation.isFirstPriority) {
-                                if (operation.name === 'toThe2Power') {
+                                if (operation.constantOperand) {
                                     this.expressionTree = {
                                         leftOperand: this.expressionTree.leftOperand,
                                         operation: this.expressionTree.operation,
                                         rightOperand: {
                                             leftOperand: this.expressionTree.rightOperand,
                                             operation: operation,
-                                            rightOperand: 2
+                                            rightOperand: operation.constantOperand
                                         },
 
                                     };
@@ -411,17 +419,27 @@
 
                             };
 
-                        } else if(operation.name === 'toThe2Power') {
+                        } else if (!operation.isTwoOperands) {
+                            this.expressionTree = {
+                                leftOperand: {
+                                    leftOperand: this.expressionTree.leftOperand,
+                                    operation: operation,
+                                    rightOperand: ''
+                                },
+                                operation: this.expressionTree.operation,
+                                rightOperand: ''
+
+                            };
+                        } else if (operation.constantOperand) {
                             this.expressionTree = {
                                 leftOperand: this.expressionTree.leftOperand,
                                 operation: operation,
-                                rightOperand: 2,
+                                rightOperand: operation.constantOperand,
 
                             };
 
                         } else {
                             this.expressionTree.operation = operation;
-                            console.log(operation.name);
                         }
 
                         break;
@@ -500,7 +518,18 @@
                         return Number((Math.sqrt(rightOperand)).toFixed(10));
 
                     case "power":
+                    case "toThe2Power":
                         return Number((leftOperand ** rightOperand).toFixed(10));
+
+                    case "percent": {
+                        if (rightOperand) {
+                            return Number((leftOperand / 100 * rightOperand).toFixed(10));
+
+                        } else {
+                            return Number((leftOperand / 100).toFixed(10));
+                        }
+
+                    }
                 }
             },
 
