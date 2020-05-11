@@ -68,17 +68,6 @@
 
                 },
 
-                // keyboard: {
-                //     number: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                //     operation: ['+', '-', '/', '*'],
-                //     oneOperandOperations: ['√', '%'],
-                //     equal: ['=', 'Enter'],
-                //     dot: '.',
-                //     clear: 'Delete',
-                //     erase: 'Backspace',
-                //
-                // },
-
                 keyboard: {
                     number: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     equal: ['=', 'Enter'],
@@ -124,7 +113,7 @@
 
                         toThe2Power: {
                             name: 'toThe2Power',
-                            isTwoOperands: false,
+                            isTwoOperands: true,
                             isFirstPriority: true,
                             symbol: '^',
                             keyboardKey: 'Shift ^'
@@ -352,8 +341,7 @@
                     case 'operation': {
                         const operation = this.userInput.value;
 
-                        //!this.expressionTree.leftOperand - empty
-                        //this code lets the user to input only + - √ operations before numbers
+                        //this code lets the user to input only + - √ operations before in the beginning of expression
                         if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand &&
                             (operation.name !== 'plus' &&
                                 operation.name !== 'subtraction' &&
@@ -361,6 +349,10 @@
                             return;
                         }
 
+                        //this code doesn't let user to input number then oneOperand operations without simple operation between
+                        if (this.expressionTree.leftOperand && !this.expressionTree.operation && !operation.isTwoOperands) {
+                            return;
+                        }
 
                         if (this.expressionTree.rightOperand) {
 
@@ -369,17 +361,30 @@
                             }
 
                             if (operation.isFirstPriority) {
+                                if (operation.name === 'toThe2Power') {
+                                    this.expressionTree = {
+                                        leftOperand: this.expressionTree.leftOperand,
+                                        operation: this.expressionTree.operation,
+                                        rightOperand: {
+                                            leftOperand: this.expressionTree.rightOperand,
+                                            operation: operation,
+                                            rightOperand: 2
+                                        },
 
-                                this.expressionTree = {
-                                    leftOperand: this.expressionTree.leftOperand,
-                                    operation: this.expressionTree.operation,
-                                    rightOperand: {
-                                        leftOperand: this.expressionTree.rightOperand,
-                                        operation: operation,
-                                        rightOperand: ''
-                                    },
+                                    };
 
-                                };
+                                } else {
+                                    this.expressionTree = {
+                                        leftOperand: this.expressionTree.leftOperand,
+                                        operation: this.expressionTree.operation,
+                                        rightOperand: {
+                                            leftOperand: this.expressionTree.rightOperand,
+                                            operation: operation,
+                                            rightOperand: ''
+                                        },
+
+                                    };
+                                }
 
                             } else {
                                 this.expressionTree = {
@@ -406,8 +411,17 @@
 
                             };
 
+                        } else if(operation.name === 'toThe2Power') {
+                            this.expressionTree = {
+                                leftOperand: this.expressionTree.leftOperand,
+                                operation: operation,
+                                rightOperand: 2,
+
+                            };
+
                         } else {
                             this.expressionTree.operation = operation;
+                            console.log(operation.name);
                         }
 
                         break;
@@ -487,9 +501,6 @@
 
                     case "power":
                         return Number((leftOperand ** rightOperand).toFixed(10));
-
-                    case "toThe2Power":
-                        return Number((leftOperand ** 2).toFixed(10));
                 }
             },
 
