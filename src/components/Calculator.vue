@@ -85,7 +85,6 @@
                         subtraction: {
                             name: 'subtraction',
                             type: operationType.UNARY_PREFIX | operationType.BINARY,
-                            // isTwoOperands: true,
                             isFirstPriority: false,
                             isAllowedBeforeNumber: true,
                             symbol: '−',
@@ -93,7 +92,6 @@
                         },
                         plus: {
                             name: 'plus',
-                            // isTwoOperands: true,
                             isFirstPriority: false,
                             isAllowedBeforeNumber: true,
                             type: operationType.UNARY_PREFIX | operationType.BINARY,
@@ -102,7 +100,6 @@
                         },
                         multiply: {
                             name: 'multiply',
-                            // isTwoOperands: true,
                             isFirstPriority: true,
                             type: operationType.BINARY,
                             symbol: '×',
@@ -110,7 +107,6 @@
                         },
                         division: {
                             name: 'division',
-                            // isTwoOperands: true,
                             isFirstPriority: true,
                             type: operationType.BINARY,
                             symbol: '÷',
@@ -118,7 +114,6 @@
                         },
                         power: {
                             name: 'power',
-                            // isTwoOperands: true,
                             isFirstPriority: true,
                             type: operationType.BINARY,
                             symbol: '^',
@@ -127,7 +122,6 @@
 
                         toThe2Power: {
                             name: 'toThe2Power',
-                            // isTwoOperands: true,
                             constantOperand: '2',
                             isFirstPriority: true,
                             type: operationType.BINARY,
@@ -136,7 +130,6 @@
                         },
                         percent: {
                             name: 'percent',
-                            // isTwoOperands: false,
                             isUnary: true,
                             isFirstPriority: true,
                             goesAfterNumber: true,
@@ -299,7 +292,7 @@
             createExpressionTree: function () {
 
 
-                if (this.result && this.userInput.type === 'operation') {
+                if (this.result && this.userInput.type === 'operation' && this.isBinary(this.userInput.type)) {
                     this.expressionTree = {
                         leftOperand: this.result,
                         operation: '',
@@ -321,99 +314,6 @@
 
                     case 'operation': {
                         this.identifyOperation();
-
-                        // const operation = this.userInput.value;
-                        //
-                        // console.log(operation.symbol);
-                        //
-                        //
-                        // //this code lets the user to input only + - √ operations before in the beginning of expression
-                        // if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && !operation.isBinary) {
-                        //     return;
-                        // }
-                        //
-                        // //this code doesn't let user to input number then oneOperand operations without simple operation between
-                        // //except % (ex 2√4)
-                        // if (this.expressionTree.leftOperand && !this.expressionTree.operation &&
-                        //     !operation.isTwoOperands && operation.name !== 'percent') {
-                        //     return;
-                        // }
-                        //
-                        // if (this.expressionTree.rightOperand) {
-                        //
-                        //
-                        //     // if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
-                        //     //     return;
-                        //     // }
-                        //
-                        //
-                        //     if (operation.isFirstPriority) {
-                        //         //eslint-disable-next-line
-                        //         // debugger;
-                        //
-                        //         this.expressionTree = {
-                        //             leftOperand: this.expressionTree.leftOperand,
-                        //             operation: this.expressionTree.operation,
-                        //             rightOperand: {
-                        //                 leftOperand: this.expressionTree.rightOperand,
-                        //                 operation: operation,
-                        //                 rightOperand: operation.constantOperand ? operation.constantOperand : ''
-                        //             },
-                        //
-                        //         };
-                        //
-                        //
-                        //
-                        //
-                        //     } else {
-                        //         this.expressionTree = {
-                        //             leftOperand: {
-                        //                 leftOperand: this.expressionTree.leftOperand,
-                        //                 operation: this.expressionTree.operation,
-                        //                 rightOperand: this.expressionTree.rightOperand,
-                        //             },
-                        //             operation: operation,
-                        //             rightOperand: ''
-                        //
-                        //         };
-                        //     }
-                        //
-                        // } else if (this.expressionTree.leftOperand && !operation.isTwoOperands) {
-                        //     this.expressionTree = {
-                        //         leftOperand: this.expressionTree.leftOperand,
-                        //         operation: this.expressionTree.operation,
-                        //         rightOperand: {
-                        //             leftOperand: this.expressionTree.rightOperand,
-                        //             operation: operation,
-                        //             rightOperand: ''
-                        //         },
-                        //
-                        //     };
-                        //
-                        // } else if (!operation.isTwoOperands) {
-                        //     console.log('peeeer');
-                        //     this.expressionTree = {
-                        //         leftOperand: {
-                        //             leftOperand: this.expressionTree.leftOperand,
-                        //             operation: operation,
-                        //             rightOperand: ''
-                        //         },
-                        //         operation: this.expressionTree.operation,
-                        //         rightOperand: ''
-                        //
-                        //     };
-                        // } else if (operation.constantOperand) {
-                        //     this.expressionTree = {
-                        //         leftOperand: this.expressionTree.leftOperand,
-                        //         operation: operation,
-                        //         rightOperand: operation.constantOperand,
-                        //
-                        //     };
-                        //
-                        // } else {
-                        //     this.expressionTree.operation = operation;
-                        // }
-
                         break;
                     }
 
@@ -646,11 +546,6 @@
                     }
 
                 } else {
-
-                    // if (this.preventOperation(this.currentNode, clickedOperation)) {
-                    //     return;
-                    // }
-
                     this.expressionTree.operation = clickedOperation;
                 }
             },
