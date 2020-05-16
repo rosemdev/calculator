@@ -50,6 +50,13 @@
 
 <script>
 
+    const operationType = {
+        UNARY_PREFIX: 0b0001, // 1
+        UNARY_SUFFIX: 0b0010, // 2
+        BINARY: 0b0100, // 4
+        TERNARY: 0b1000, // 8
+    };
+
     export default {
         name: 'calculator',
         props: {},
@@ -77,68 +84,81 @@
                     operation: {
                         subtraction: {
                             name: 'subtraction',
-                            isTwoOperands: true,
+                            type: operationType.UNARY_PREFIX | operationType.BINARY,
+                            // isTwoOperands: true,
                             isFirstPriority: false,
+                            isAllowedBeforeNumber: true,
                             symbol: '−',
-                            keyboardKey: '-'
+                            keyboardKey: '-',
                         },
                         plus: {
                             name: 'plus',
-                            isTwoOperands: true,
+                            // isTwoOperands: true,
                             isFirstPriority: false,
+                            isAllowedBeforeNumber: true,
+                            type: operationType.UNARY_PREFIX | operationType.BINARY,
                             symbol: '+',
-                            keyboardKey: '+'
+                            keyboardKey: '+',
                         },
                         multiply: {
                             name: 'multiply',
-                            isTwoOperands: true,
+                            // isTwoOperands: true,
                             isFirstPriority: true,
+                            type: operationType.BINARY,
                             symbol: '×',
-                            keyboardKey: '*'
+                            keyboardKey: '*',
                         },
                         division: {
                             name: 'division',
-                            isTwoOperands: true,
+                            // isTwoOperands: true,
                             isFirstPriority: true,
+                            type: operationType.BINARY,
                             symbol: '÷',
-                            keyboardKey: '/'
+                            keyboardKey: '/',
                         },
                         power: {
                             name: 'power',
-                            isTwoOperands: true,
+                            // isTwoOperands: true,
                             isFirstPriority: true,
+                            type: operationType.BINARY,
                             symbol: '^',
-                            keyboardKey: 'Shift ^'
+                            keyboardKey: 'Shift ^',
                         },
 
                         toThe2Power: {
                             name: 'toThe2Power',
-                            isTwoOperands: true,
+                            // isTwoOperands: true,
                             constantOperand: '2',
                             isFirstPriority: true,
+                            type: operationType.BINARY,
                             symbol: '^',
-                            keyboardKey: 'Shift ^'
+                            keyboardKey: 'Shift ^',
                         },
                         percent: {
                             name: 'percent',
-                            isTwoOperands: true,
-                            // constantOperand: '0.01',
-                            isApplicableForNumber: true,
+                            // isTwoOperands: false,
+                            isUnary: true,
                             isFirstPriority: true,
+                            goesAfterNumber: true,
+                            type: operationType.UNARY_SUFFIX,
                             symbol: '%',
-                            keyboardKey: 'Shift %'
+                            keyboardKey: 'Shift %',
                         },
                         squareRoot: {
                             name: 'squareRoot',
-                            isTwoOperands: false,
+                            // isTwoOperands: false,
+                            isUnary: true,
                             isFirstPriority: true,
+                            isAllowedBeforeNumber: true,
+                            type: operationType.UNARY_PREFIX, //@TODO binary?
                             symbol: '√',
-                            keyboardKey: ''
+                            keyboardKey: '',
                         },
                     },
                 },
 
                 result: '',
+                currentNode: '',
                 isExtended: true
             }
         },
@@ -163,40 +183,9 @@
         },
 
         methods: {
-            isKeyNumber(key) {
-                return this.keyboard.number.includes(Number(key));
-            },
 
-            isOperationKey(key) {
-
-                let operations = this.keyboard.operation;
-
-                for (let operation in operations) {
-                    if (key === operations[operation].keyboardKey) {
-                        return operation;
-                    }
-                }
-            },
-
-            isKeyDot(key) {
-                return this.keyboard.dot === key;
-            },
-
-            isKeyErase(key) {
-                return this.keyboard.erase === key;
-            },
-
-            isKeyClear(key) {
-                return this.keyboard.clear === key;
-            },
-
-            isKeyEqual(key) {
-                return this.keyboard.equal.includes(key);
-            },
-
-            isControlKey(key) {
-                return this.isKeyNumber(key) || this.isOperationKey(key) || this.isKeyDot(key) ||
-                    this.isKeyErase(key) || this.isKeyClear(key) || this.isKeyEqual(key);
+            isOperationType(operation, type) {
+                return Boolean(operation.type & type);
             },
 
             onClick(event) {
@@ -326,141 +315,110 @@
 
                 switch (this.userInput.type) {
                     case 'number': {
-                        if (this.expressionTree.operation.length === 0) {
-                            this.expressionTree.leftOperand += this.userInput.value;
-                        } else {
-                            if (typeof this.expressionTree.rightOperand !== 'object') {
-                                this.expressionTree.rightOperand += this.userInput.value;
-                            } else {
-                                this.expressionTree.rightOperand.rightOperand += this.userInput.value;
-                            }
-                        }
-
+                        this.identifyNumber();
                         break;
                     }
 
                     case 'operation': {
-                        const operation = this.userInput.value;
-                        
-                        console.log(operation.symbol);
+                        this.identifyOperation();
 
-
-                        //this code lets the user to input only + - √ operations before in the beginning of expression
-                        if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand &&
-                            (operation.name !== 'plus' &&
-                                operation.name !== 'subtraction' &&
-                                operation.name !== 'squareRoot')) {
-                            return;
-                        }
-
-                        //this code doesn't let user to input number then oneOperand operations without simple operation between
-                        //except % (ex 2√4)
-                        if (this.expressionTree.leftOperand && !this.expressionTree.operation &&
-                            !operation.isTwoOperands && operation.name !== 'percent') {
-                            return;
-                        }
-
-                        if (this.expressionTree.rightOperand) {
-                            //eslint-disable-next-line
-                            // debugger;
-
-                            // if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
-                            //     return;
-                            // }
-
-                            if (operation.isFirstPriority) {
-                                if (operation.constantOperand) {
-                                    this.expressionTree = {
-                                        leftOperand: this.expressionTree.leftOperand,
-                                        operation: this.expressionTree.operation,
-                                        rightOperand: {
-                                            leftOperand: this.expressionTree.rightOperand,
-                                            operation: operation,
-                                            rightOperand: operation.constantOperand
-                                        },
-
-                                    };
-
-                                } else {
-                                    this.expressionTree = {
-                                        leftOperand: this.expressionTree.leftOperand,
-                                        operation: this.expressionTree.operation,
-                                        rightOperand: {
-                                            leftOperand: this.expressionTree.rightOperand,
-                                            operation: operation,
-                                            rightOperand: ''
-                                        },
-
-                                    };
-                                }
-
-                            } else {
-                                this.expressionTree = {
-                                    leftOperand: {
-                                        leftOperand: this.expressionTree.leftOperand,
-                                        operation: this.expressionTree.operation,
-                                        rightOperand: this.expressionTree.rightOperand,
-                                    },
-                                    operation: operation,
-                                    rightOperand: ''
-
-                                };
-                            }
-
-                        } else if (this.expressionTree.leftOperand && !operation.isTwoOperands) {
-                            this.expressionTree = {
-                                leftOperand: this.expressionTree.leftOperand,
-                                operation: this.expressionTree.operation,
-                                rightOperand: {
-                                    leftOperand: this.expressionTree.rightOperand,
-                                    operation: operation,
-                                    rightOperand: ''
-                                },
-
-                            };
-
-                        } else if (!operation.isTwoOperands) {
-                            this.expressionTree = {
-                                leftOperand: {
-                                    leftOperand: this.expressionTree.leftOperand,
-                                    operation: operation,
-                                    rightOperand: ''
-                                },
-                                operation: this.expressionTree.operation,
-                                rightOperand: ''
-
-                            };
-                        } else if (operation.constantOperand) {
-                            this.expressionTree = {
-                                leftOperand: this.expressionTree.leftOperand,
-                                operation: operation,
-                                rightOperand: operation.constantOperand,
-
-                            };
-
-                        } else {
-                            this.expressionTree.operation = operation;
-                        }
+                        // const operation = this.userInput.value;
+                        //
+                        // console.log(operation.symbol);
+                        //
+                        //
+                        // //this code lets the user to input only + - √ operations before in the beginning of expression
+                        // if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand && !operation.isBinary) {
+                        //     return;
+                        // }
+                        //
+                        // //this code doesn't let user to input number then oneOperand operations without simple operation between
+                        // //except % (ex 2√4)
+                        // if (this.expressionTree.leftOperand && !this.expressionTree.operation &&
+                        //     !operation.isTwoOperands && operation.name !== 'percent') {
+                        //     return;
+                        // }
+                        //
+                        // if (this.expressionTree.rightOperand) {
+                        //
+                        //
+                        //     // if (this.expressionTree.rightOperand.operation && this.expressionTree.rightOperand.rightOperand.length === 0) {
+                        //     //     return;
+                        //     // }
+                        //
+                        //
+                        //     if (operation.isFirstPriority) {
+                        //         //eslint-disable-next-line
+                        //         // debugger;
+                        //
+                        //         this.expressionTree = {
+                        //             leftOperand: this.expressionTree.leftOperand,
+                        //             operation: this.expressionTree.operation,
+                        //             rightOperand: {
+                        //                 leftOperand: this.expressionTree.rightOperand,
+                        //                 operation: operation,
+                        //                 rightOperand: operation.constantOperand ? operation.constantOperand : ''
+                        //             },
+                        //
+                        //         };
+                        //
+                        //
+                        //
+                        //
+                        //     } else {
+                        //         this.expressionTree = {
+                        //             leftOperand: {
+                        //                 leftOperand: this.expressionTree.leftOperand,
+                        //                 operation: this.expressionTree.operation,
+                        //                 rightOperand: this.expressionTree.rightOperand,
+                        //             },
+                        //             operation: operation,
+                        //             rightOperand: ''
+                        //
+                        //         };
+                        //     }
+                        //
+                        // } else if (this.expressionTree.leftOperand && !operation.isTwoOperands) {
+                        //     this.expressionTree = {
+                        //         leftOperand: this.expressionTree.leftOperand,
+                        //         operation: this.expressionTree.operation,
+                        //         rightOperand: {
+                        //             leftOperand: this.expressionTree.rightOperand,
+                        //             operation: operation,
+                        //             rightOperand: ''
+                        //         },
+                        //
+                        //     };
+                        //
+                        // } else if (!operation.isTwoOperands) {
+                        //     console.log('peeeer');
+                        //     this.expressionTree = {
+                        //         leftOperand: {
+                        //             leftOperand: this.expressionTree.leftOperand,
+                        //             operation: operation,
+                        //             rightOperand: ''
+                        //         },
+                        //         operation: this.expressionTree.operation,
+                        //         rightOperand: ''
+                        //
+                        //     };
+                        // } else if (operation.constantOperand) {
+                        //     this.expressionTree = {
+                        //         leftOperand: this.expressionTree.leftOperand,
+                        //         operation: operation,
+                        //         rightOperand: operation.constantOperand,
+                        //
+                        //     };
+                        //
+                        // } else {
+                        //     this.expressionTree.operation = operation;
+                        // }
 
                         break;
                     }
 
                     case 'dot': {
-                        if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
-                            if (this.expressionTree.leftOperand.includes('.')) {
-                                return;
-                            }
-
-                            this.expressionTree.leftOperand = this.expressionTree.leftOperand + '.';
-
-                        } else if (this.expressionTree.rightOperand.length >= 0) {
-                            if (this.expressionTree.rightOperand.includes('.')) {
-                                return;
-                            }
-
-                            this.expressionTree.rightOperand = this.expressionTree.rightOperand + '.';
-                        }
-
+                        this.addDot();
                         break;
                     }
 
@@ -522,14 +480,196 @@
                         return Number((leftOperand ** rightOperand).toFixed(10));
 
                     case "percent": {
-                        if (rightOperand) {
+                        /*if (rightOperand) {
                             return Number((leftOperand / 100 * rightOperand).toFixed(10));
 
                         } else {
-                            return Number((leftOperand / 100).toFixed(10));
-                        }
+                        }*/
+                        return Number((leftOperand / 100).toFixed(10));
 
                     }
+                }
+            },
+
+            identifyNumber() {
+                // If there is no operation write to the left operand
+                if (this.expressionTree.operation.length === 0) {
+                    // If the left operand is string concatenate sting numbers
+                    if (typeof this.expressionTree.leftOperand !== 'object') {
+                        this.expressionTree.leftOperand += this.userInput.value;
+                        // Else if operation is object and operation is prefix unary (+, -, √) concatenate sting numbers
+                        // into the right operand
+                    } else if (this.isUnaryPrefix(this.expressionTree.leftOperand.operation)) {
+                        this.expressionTree.leftOperand.rightOperand += this.userInput.value;
+                    } else {
+                        this.expressionTree.leftOperand.leftOperand += this.userInput.value;
+                    }
+                    // Else if we have the operation write to the right operand
+                } else { // 2+(2*<empty>) //2+(<empty>√2) //2+(2%<empty>)
+                    // If the right operand is string concatenate sting numbers
+                    if (typeof this.expressionTree.rightOperand !== 'object') {
+                        this.expressionTree.rightOperand += this.userInput.value;
+                    } else if (this.isUnarySufix(this.expressionTree.rightOperand.operation)) {
+                        return
+                    } else {
+                        this.expressionTree.rightOperand.rightOperand += this.userInput.value;
+                    }
+                }
+            },
+
+            isUnarySufix(operation) {
+                return this.isOperationType(operation, operationType.UNARY_SUFFIX);
+            },
+
+            isUnaryPrefix(operation) {
+                return this.isOperationType(operation, operationType.UNARY_PREFIX);
+            },
+
+            isBinary(operation) {
+                return this.isOperationType(operation, operationType.BINARY);
+            },
+            preventOperation(expressionTree, clickedOperation) {
+
+                //eslint-disable-next-line
+                // debugger;
+
+                if (!this.isBinary(clickedOperation)) {
+                    return true;
+                }
+
+
+                if (expressionTree.operation && !expressionTree.rightOperand && clickedOperation) {
+                    return true;
+                }
+
+                if (typeof expressionTree.leftOperand === 'object') {
+                    console.log('object');
+                    this.preventOperation(expressionTree.leftOperand, clickedOperation);
+
+                } else if (typeof expressionTree.rightOperand === 'object') {
+                    console.log('object right');
+                    this.preventOperation(expressionTree.rightOperand, clickedOperation);
+                }
+
+                return false;
+            },
+
+            identifyOperation() {
+
+                const clickedOperation = this.userInput.value;
+                console.log(clickedOperation.name);
+
+                if (this.preventOperation(this.currentNode, clickedOperation)) {
+                    return;
+                }
+
+                //this code lets the user to input only + - √ operations before in the beginning of expression
+                if (!this.expressionTree.leftOperand && !this.expressionTree.rightOperand &&
+                    !this.isUnaryPrefix(clickedOperation)) {
+
+                    return;
+
+                } else if (clickedOperation.name === 'plus' || clickedOperation.name === 'subtraction') {
+                    clickedOperation.type = operationType.BINARY;
+                }
+
+                if (!this.expressionTree.leftOperand && this.isUnaryPrefix(clickedOperation)) {
+
+                    this.expressionTree = {
+                        leftOperand: {
+                            leftOperand: '',
+                            operation: clickedOperation,
+                            rightOperand: this.expressionTree.leftOperand
+                        },
+                        operation: '',
+                        rightOperand: ''
+                    }
+
+                } else if (this.expressionTree.leftOperand && !this.expressionTree.rightOperand &&
+                    this.isUnarySufix(clickedOperation)) {
+
+                    this.expressionTree = {
+                        leftOperand: {
+                            leftOperand: this.expressionTree.leftOperand,
+                            operation: clickedOperation,
+                            rightOperand: ''
+                        },
+                        operation: '',
+                        rightOperand: ''
+                    }
+
+                } else if (this.expressionTree.leftOperand && this.expressionTree.operation
+                    && this.isUnaryPrefix(clickedOperation)) {
+
+                    this.expressionTree = {
+                        leftOperand: this.expressionTree.leftOperand,
+                        operation: this.expressionTree.operation,
+                        rightOperand: {
+                            leftOperand: '',
+                            operation: clickedOperation,
+                            rightOperand: this.expressionTree.rightOperand
+                        }
+                    }
+
+                } else if (this.expressionTree.rightOperand) {
+
+                    if (clickedOperation.isFirstPriority) {
+
+                        console.log('isFirstPriority');
+                        this.expressionTree = {
+                            leftOperand: this.expressionTree.leftOperand,
+                            operation: this.expressionTree.operation,
+                            rightOperand: {
+                                leftOperand: this.expressionTree.rightOperand,
+                                operation: clickedOperation,
+                                rightOperand: clickedOperation.constantOperand ? clickedOperation.constantOperand : ''
+                            }
+                        };
+
+                        this.currentNode = this.expressionTree.rightOperand;
+
+
+                    } else {
+
+                        this.expressionTree = {
+                            leftOperand: {
+                                leftOperand: this.expressionTree.leftOperand,
+                                operation: this.expressionTree.operation,
+                                rightOperand: clickedOperation.constantOperand ? clickedOperation.constantOperand : this.expressionTree.rightOperand,
+                            },
+                            operation: clickedOperation,
+                            rightOperand: ''
+                        };
+
+                        this.currentNode = this.expressionTree.leftOperand;
+
+                    }
+
+                } else {
+
+                    // if (this.preventOperation(this.currentNode, clickedOperation)) {
+                    //     return;
+                    // }
+
+                    this.expressionTree.operation = clickedOperation;
+                }
+            },
+
+
+            addDot() {
+                if (this.expressionTree.leftOperand.length >= 0 && this.expressionTree.rightOperand.length === 0) {
+                    if (this.expressionTree.leftOperand.includes('.')) {
+                        return;
+                    }
+
+                    this.expressionTree.leftOperand = this.expressionTree.leftOperand + '.';
+
+                } else if (this.expressionTree.rightOperand.length >= 0) {
+                    if (this.expressionTree.rightOperand.includes('.')) {
+                        return;
+                    }
+
+                    this.expressionTree.rightOperand = this.expressionTree.rightOperand + '.';
                 }
             },
 
@@ -576,7 +716,43 @@
                     }
 
                 }
-            }
+            },
+
+            isKeyNumber(key) {
+                return this.keyboard.number.includes(Number(key));
+            },
+
+            isOperationKey(key) {
+
+                let operations = this.keyboard.operation;
+
+                for (let operation in operations) {
+                    if (key === operations[operation].keyboardKey) {
+                        return operation;
+                    }
+                }
+            },
+
+            isKeyDot(key) {
+                return this.keyboard.dot === key;
+            },
+
+            isKeyErase(key) {
+                return this.keyboard.erase === key;
+            },
+
+            isKeyClear(key) {
+                return this.keyboard.clear === key;
+            },
+
+            isKeyEqual(key) {
+                return this.keyboard.equal.includes(key);
+            },
+
+            isControlKey(key) {
+                return this.isKeyNumber(key) || this.isOperationKey(key) || this.isKeyDot(key) ||
+                    this.isKeyErase(key) || this.isKeyClear(key) || this.isKeyEqual(key);
+            },
         },
     }
 </script>
