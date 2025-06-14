@@ -1,6 +1,5 @@
 n<template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
     <p class="github-link"><a href="https://github.com/rosemdev/calculator" target="_blank">@rosem</a></p>
     <calculator/>
   </div>
